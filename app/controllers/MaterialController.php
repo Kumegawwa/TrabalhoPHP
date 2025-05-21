@@ -1,7 +1,7 @@
 <?php
 class MaterialController {
     public function create($curso_id) {
-        require 'app/views/materiais/form.php';
+        require __DIR__ . '/../app/views/materiais/form.php';
     }
 
     public function store() {

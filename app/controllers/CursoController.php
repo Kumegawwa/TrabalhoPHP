@@ -4,7 +4,7 @@ class CursoController {
         global $pdo;
         $cursoModel = new Curso();
         $cursos = $cursoModel->getAll($pdo);
-        require 'app/views/cursos/index.php';
+        require __DIR__ . '/../app/views/cursos/index.php';
     }
 
     public function create() {

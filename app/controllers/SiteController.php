@@ -1,7 +1,7 @@
 <?php
 class SiteController {
     public function home() {
-        require 'app/views/site/home.php';
+        require __DIR__ . '/../app/views/site/home.php';
     }
 
     public function sobre() {

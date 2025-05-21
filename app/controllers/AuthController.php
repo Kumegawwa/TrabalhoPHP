@@ -1,7 +1,7 @@
 <?php
 class AuthController {
     public function login() {
-        require 'app/views/auth/login.php';
+        require __DIR__ . '/../views/auth/login.php';
     }
 
     public function processLogin() {
