@@ -10,10 +10,10 @@ $_SESSION['csrf_token'] = $token;
 <head>
     <meta charset="UTF-8">
     <title>Login - SGA</title>
-    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/TrabalhoPHP/public/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <script defer src="/public/js/main.js"></script>
+    <script defer src="/TrabalhoPHP/public/js/main.js"></script>
 </head>
 <body>
 
