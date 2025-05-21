@@ -15,7 +15,8 @@ class AuthController {
         if ($user && password_verify($senha, $user['senha_hash'])) {
             $_SESSION['usuario_id'] = $user['id'];
             $_SESSION['perfil'] = $user['perfil'];
-            header('Location: /painel');
+            // Modificado para incluir o prefixo TrabalhoPHP no redirecionamento
+            header('Location: /TrabalhoPHP/home');
         } else {
             echo "Login inválido";
         }
