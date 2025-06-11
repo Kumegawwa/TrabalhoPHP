@@ -2,13 +2,10 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-// Certifique-se que BASE_URL está definida
+// Certifique-se que BASE_URL está definida (geralmente em public/index.php)
 if (!defined('BASE_URL')) {
-    define('BASE_URL', '/TrabalhoPHP'); // Ou o que for correto
+    define('BASE_URL', '/TrabalhoPHP');
 }
-// $current é um pouco mais complexo com o roteador, vamos simplificar por enquanto
-// Você pode obter a rota atual do $route em index.php e passá-la para a view se necessário
-// Ou pode analisar $_SERVER['REQUEST_URI']
 $current_path = strtok($_SERVER['REQUEST_URI'], '?');
 ?>
 <!DOCTYPE html>
@@ -17,24 +14,14 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestão de Aprendizagem</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
+    
+    <link rel="stylesheet" href="<?= BASE_URL ?>/css/style.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <script defer src="<?= BASE_URL ?>/public/js/main.js"></script>
+    
+    <script defer src="<?= BASE_URL ?>/js/main.js"></script>
 </head>
-<body>
-    <header class="navbar">
-        </header>
-    <main class="main-content">
-        <div class="container page-container">
-            <?php if (isset($_SESSION['error_message'])): ?>
-                <div class="alert alert-error"><?= $_SESSION['error_message'] ?></div>
-                <?php unset($_SESSION['error_message']); ?>
-            <?php endif; ?>
-            <?php if (isset($_SESSION['success_message'])): ?>
-                <div class="alert alert-success"><?= $_SESSION['success_message'] ?></div>
-                <?php unset($_SESSION['success_message']); ?>
-            <?php endif; ?>
 <body>
     <header class="navbar">
         <div class="container">
@@ -53,9 +40,6 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle"><i class="fas fa-user-circle"></i> <?= htmlspecialchars($_SESSION['usuario_nome'] ?? 'Minha Conta') ?> <i class="fas fa-chevron-down"></i></a>
                             <ul class="dropdown-menu">
-                                <!-- Adicione rotas para painel e perfil se existirem -->
-                                <!-- <li><a href="<?= BASE_URL ?>/painel"><i class="fas fa-tachometer-alt"></i> Painel</a></li> -->
-                                <!-- <li><a href="<?= BASE_URL ?>/perfil"><i class="fas fa-user-edit"></i> Perfil</a></li> -->
                                 <li><a href="<?= BASE_URL ?>/logout" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                             </ul>
                         </li>
@@ -67,4 +51,12 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
         </div>
     </header>
     <main class="main-content">
-        <div class="container page-container"> <!-- Adicionada classe page-container -->
+        <div class="container page-container">
+            <?php if (isset($_SESSION['error_message'])): ?>
+                <div class="alert alert-error"><?= $_SESSION['error_message'] ?></div>
+                <?php unset($_SESSION['error_message']); ?>
+            <?php endif; ?>
+            <?php if (isset($_SESSION['success_message'])): ?>
+                <div class="alert alert-success"><?= $_SESSION['success_message'] ?></div>
+                <?php unset($_SESSION['success_message']); ?>
+            <?php endif; ?>
