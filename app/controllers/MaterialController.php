@@ -1,29 +1,30 @@
 <?php
-class MaterialController {
-    public function create($curso_id) {
-        global $pdo;
-        // Verifica se o usuário é o professor do curso
+
+class MaterialController extends BaseController {
+
+    public function create(int $curso_id) {
+        $this->checkProfessor();
         $cursoModel = new Curso();
-        $curso = $cursoModel->findById($pdo, $curso_id);
+        $curso = $cursoModel->findById($this->pdo, $curso_id);
         if (!$curso || $curso['professor_id'] != $_SESSION['usuario_id']) {
             $_SESSION['error_message'] = "Acesso negado.";
-            header('Location: ' . BASE_URL . '/cursos');
+            header('Location: ' . BASE_URL . '/dashboard');
             exit;
         }
 
-        $viewData = ['titulo_pagina' => 'Adicionar Material/Atividade', 'action' => BASE_URL . '/materiais/store', 'material' => null, 'curso_id' => $curso_id];
+        $viewData = ['titulo_pagina' => 'Adicionar Material/Atividade', 'action' => BASE_URL . '/materiais/store', 'material' => null, 'curso_id' => $curso_id, 'is_edit' => false];
         require __DIR__ . '/../views/materiais/form.php';
     }
 
     public function store() {
-        global $pdo;
+        $this->checkProfessor();
         $material = new Material();
         $material->curso_id = $_POST['curso_id'];
         $material->titulo = $_POST['titulo'];
         $material->conteudo = $_POST['conteudo'];
         $material->tipo = $_POST['tipo'];
         
-        if ($material->create($pdo)) {
+        if ($material->create($this->pdo)) {
             $_SESSION['success_message'] = 'Material adicionado com sucesso!';
         } else {
             $_SESSION['error_message'] = 'Erro ao adicionar material.';
@@ -32,5 +33,80 @@ class MaterialController {
         exit;
     }
     
-    // Implemente edit, update e delete de forma similar ao CursoController se necessário
+    public function edit(int $id) {
+        $this->checkProfessor();
+        $materialModel = new Material();
+        $material = $materialModel->findById($this->pdo, $id);
+
+        if (!$material) { http_response_code(404); echo "Material não encontrado."; exit; }
+
+        $cursoModel = new Curso();
+        $curso = $cursoModel->findById($this->pdo, $material['curso_id']);
+
+        if (!$curso || $curso['professor_id'] != $_SESSION['usuario_id']) {
+            $_SESSION['error_message'] = 'Você não tem permissão para editar este material.';
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit;
+        }
+
+        $viewData = ['titulo_pagina' => 'Editar Material', 'action' => BASE_URL . '/materiais/update/' . $id, 'material' => $material, 'curso_id' => $material['curso_id'], 'is_edit' => true];
+        require __DIR__ . '/../views/materiais/form.php';
+    }
+
+    public function update(int $id) {
+        $this->checkProfessor();
+        $materialModel = new Material();
+        $material = $materialModel->findById($this->pdo, $id);
+
+        if (!$material) { http_response_code(404); echo "Material não encontrado."; exit; }
+
+        $cursoModel = new Curso();
+        $curso = $cursoModel->findById($this->pdo, $material['curso_id']);
+
+        if (!$curso || $curso['professor_id'] != $_SESSION['usuario_id']) {
+            $_SESSION['error_message'] = 'Você não tem permissão para editar este material.';
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit;
+        }
+
+        $materialToUpdate = new Material();
+        $materialToUpdate->id = $id;
+        $materialToUpdate->titulo = $_POST['titulo'];
+        $materialToUpdate->conteudo = $_POST['conteudo'];
+        $materialToUpdate->tipo = $_POST['tipo'];
+        
+        if ($materialToUpdate->update($this->pdo)) {
+            $_SESSION['success_message'] = 'Material atualizado com sucesso!';
+        } else {
+            $_SESSION['error_message'] = 'Erro ao atualizar material.';
+        }
+        header("Location: " . BASE_URL . "/cursos/show/{$material['curso_id']}");
+        exit;
+    }
+
+    public function delete(int $id) {
+        $this->checkProfessor();
+        $materialModel = new Material();
+        $material = $materialModel->findById($this->pdo, $id);
+
+        if (!$material) { http_response_code(404); echo "Material não encontrado."; exit; }
+        
+        $cursoModel = new Curso();
+        $curso = $cursoModel->findById($this->pdo, $material['curso_id']);
+
+        if (!$curso || $curso['professor_id'] != $_SESSION['usuario_id']) {
+            $_SESSION['error_message'] = 'Você não tem permissão para excluir este material.';
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit;
+        }
+        
+        if ($materialModel->delete($this->pdo, $id)) {
+            $_SESSION['success_message'] = 'Material excluído com sucesso!';
+        } else {
+            $_SESSION['error_message'] = 'Erro ao excluir material.';
+        }
+
+        header("Location: " . BASE_URL . "/cursos/show/{$material['curso_id']}");
+        exit;
+    }
 }

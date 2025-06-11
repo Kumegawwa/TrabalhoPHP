@@ -1,36 +1,49 @@
 <?php
+/**
+ * Ponto de Entrada (Front-Controller) da Aplicação SGA.
+ * Todas as requisições são direcionadas para este arquivo.
+ */
+
+// Garante que a sessão seja iniciada em todas as requisições.
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Configuração e Autoloader
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../helpers/csrf.php';
+// 1. CARREGAMENTO DE ARQUIVOS ESSENCIAIS E CONFIGURAÇÕES
+require_once __DIR__ . '/../config/database.php'; // Conexão com o banco ($pdo)
+require_once __DIR__ . '/../helpers/csrf.php';      // Funções de proteção CSRF
 
+/**
+ * Autoloader simples para carregar classes de Models e Controllers automaticamente.
+ */
 spl_autoload_register(function ($class_name) {
-    $paths = [
-        __DIR__ . '/../app/controllers/' . $class_name . '.php',
-        __DIR__ . '/../app/models/' . $class_name . '.php'
-    ];
-    foreach ($paths as $file) {
-        if (file_exists($file)) {
-            require_once $file;
-            return;
-        }
+    // Procura a classe na pasta de controllers (incluindo o BaseController)
+    $controller_file = __DIR__ . '/../app/controllers/' . $class_name . '.php';
+    if (file_exists($controller_file)) {
+        require_once $controller_file;
+        return;
+    }
+
+    // Procura a classe na pasta de models
+    $model_file = __DIR__ . '/../app/models/' . $class_name . '.php';
+    if (file_exists($model_file)) {
+        require_once $model_file;
+        return;
     }
 });
 
-// Constante para a URL base
+// Define uma constante global para a URL base, facilitando a criação de links.
 define('BASE_URL', '/TrabalhoPHP');
 
-// Análise da Rota
+// 2. SISTEMA DE ROTEAMENTO
+// Analisa a URL requisitada para determinar a rota.
 $request_uri = $_SERVER['REQUEST_URI'];
 $base_path = str_replace('/public/index.php', '', $_SERVER['SCRIPT_NAME']);
 $route = '/' . trim(str_replace($base_path, '', strtok($request_uri, '?')), '/');
 
-// Rotas da Aplicação
+// Mapeamento de todas as rotas da aplicação para [Controller, Método]
 $routes = [
-    // GET
+    // Rotas GET (carregamento de páginas)
     'GET' => [
         '/' => ['SiteController', 'home'],
         '/home' => ['SiteController', 'home'],
@@ -47,8 +60,9 @@ $routes = [
         '/cursos/edit/{id:[0-9]+}' => ['CursoController', 'edit'],
         '/cursos/enroll/{curso_id:[0-9]+}' => ['CursoController', 'enroll'],
         '/materiais/create/{curso_id:[0-9]+}' => ['MaterialController', 'create'],
+        '/materiais/edit/{id:[0-9]+}' => ['MaterialController', 'edit'],
     ],
-    // POST
+    // Rotas POST (submissão de formulários)
     'POST' => [
         '/login' => ['AuthController', 'processLogin'],
         '/register' => ['UsuarioController', 'store'],
@@ -58,41 +72,18 @@ $routes = [
         '/cursos/update/{id:[0-9]+}' => ['CursoController', 'update'],
         '/cursos/delete/{id:[0-9]+}' => ['CursoController', 'delete'],
         '/materiais/store' => ['MaterialController', 'store'],
+        '/materiais/update/{id:[0-9]+}' => ['MaterialController', 'update'],
+        '/materiais/delete/{id:[0-9]+}' => ['MaterialController', 'delete'],
     ]
 ];
 
-// Funções de Proteção de Rota
-function isProtectedRoute($controller, $action) {
-    $protected = [
-        'DashboardController@index',
-        'CursoController@create', 'CursoController@store', 'CursoController@show', 
-        'CursoController@edit', 'CursoController@update', 'CursoController@delete', 
-        'CursoController@enroll', 'CursoController@joinByCode',
-        'MaterialController@create', 'MaterialController@store',
-        'AuthController@logout'
-    ];
-    return in_array($controller . '@' . $action, $protected);
-}
-
-function isProfessorRoute($controller, $action) {
-    $profRoutes = [
-        'CursoController@create', 'CursoController@store', 'CursoController@edit', 
-        'CursoController@update', 'CursoController@delete',
-        'MaterialController@create', 'MaterialController@store'
-    ];
-    return in_array($controller . '@' . $action, $profRoutes);
-}
-
-// Lógica de Roteamento
+// 3. LÓGICA DE DESPACHO DA ROTA (DISPATCHER)
 $method = $_SERVER['REQUEST_METHOD'];
-if ($method === 'POST' && isset($_POST['_method']) && in_array(strtoupper($_POST['_method']), ['PUT', 'DELETE'])) {
-    $method = strtoupper($_POST['_method']);
-}
-
 $controllerName = null;
 $actionName = null;
 $params = [];
 
+// Encontra a rota correspondente na lista de rotas
 if (isset($routes[$method])) {
     foreach ($routes[$method] as $routePattern => $handler) {
         $pattern = preg_replace_callback('/\{([a-zA-Z0-9_]+):([^\}]+)\}/', function($m) { return '(?P<'.$m[1].'>'.$m[2].')'; }, $routePattern);
@@ -111,32 +102,34 @@ if (isset($routes[$method])) {
     }
 }
 
-// Despacho da Rota
+// Executa o controller e o método correspondente
 if ($controllerName && $actionName) {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
-        $_SESSION['error_message'] = 'Falha de segurança (CSRF). Tente novamente.';
+    // Validação CSRF para todas as requisições POST
+    if ($method === 'POST' && !verifyCsrfToken()) {
+        $_SESSION['error_message'] = 'Falha de segurança (CSRF). Por favor, tente novamente.';
+        // Redireciona para a página anterior ou para a home
         header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? BASE_URL . '/'));
         exit;
     }
 
-    if (isProtectedRoute($controllerName, $actionName) && !isset($_SESSION['usuario_id'])) {
-        $_SESSION['error_message'] = 'Você precisa estar logado para acessar esta página.';
-        header('Location: ' . BASE_URL . '/login');
-        exit;
-    }
-
-    if (isProfessorRoute($controllerName, $actionName) && (!isset($_SESSION['perfil']) || $_SESSION['perfil'] !== 'professor')) {
-        $_SESSION['error_message'] = 'Acesso negado. Apenas professores podem realizar esta ação.';
-        header('Location: ' . BASE_URL . '/dashboard');
-        exit;
-    }
-
-    $controllerInstance = new $controllerName();
-    if (method_exists($controllerInstance, $actionName)) {
-        call_user_func_array([$controllerInstance, $actionName], $params);
+    if (class_exists($controllerName)) {
+        // REFActoring: Injeta a conexão PDO no construtor do controller.
+        // Isso elimina a necessidade de 'global $pdo' e melhora a qualidade do código.
+        $controllerInstance = new $controllerName($pdo);
+        
+        if (method_exists($controllerInstance, $actionName)) {
+            // A lógica de segurança (checkAuth, checkProfessor) agora está DENTRO dos próprios controllers.
+            call_user_func_array([$controllerInstance, $actionName], $params);
+        } else {
+            http_response_code(404);
+            echo "Erro 404: O método '{$actionName}' não foi encontrado no controller '{$controllerName}'.";
+        }
     } else {
-        http_response_code(404); echo "Erro 404: Método não encontrado.";
+        http_response_code(404);
+        echo "Erro 404: O controller '{$controllerName}' não foi encontrado.";
     }
 } else {
-    http_response_code(404); echo "Erro 404: Rota não encontrada.";
+    // Se nenhuma rota foi encontrada, exibe erro 404.
+    http_response_code(404);
+    echo "Erro 404: Página não encontrada.";
 }

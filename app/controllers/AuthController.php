@@ -1,11 +1,12 @@
 <?php
-class AuthController {
+
+class AuthController extends BaseController {
+
     public function login() {
         require __DIR__ . '/../views/auth/login.php';
     }
 
     public function processLogin() {
-        global $pdo;
         $email = $_POST['email'] ?? '';
         $senha = $_POST['senha'] ?? '';
 
@@ -16,7 +17,7 @@ class AuthController {
         }
 
         $usuarioModel = new Usuario();
-        $user = $usuarioModel->findByEmail($pdo, $email);
+        $user = $usuarioModel->findByEmail($this->pdo, $email);
 
         if ($user && password_verify($senha, $user['senha_hash'])) {
             $_SESSION['usuario_id'] = $user['id'];
@@ -24,7 +25,7 @@ class AuthController {
             $_SESSION['usuario_nome'] = $user['nome'];
             
             unset($_SESSION['error_message']);
-            header('Location: ' . BASE_URL . '/cursos');
+            header('Location: ' . BASE_URL . '/dashboard');
             exit;
         } else {
             $_SESSION['error_message'] = "Login inválido. Verifique seu email e senha.";
@@ -34,6 +35,7 @@ class AuthController {
     }
 
     public function logout() {
+        $this->checkAuth(); // Apenas usuários logados podem fazer logout.
         session_unset();
         session_destroy();
         header('Location: ' . BASE_URL . '/login');
@@ -45,18 +47,17 @@ class AuthController {
     }
 
     public function processRecovery() {
-        global $pdo;
         $cpf = $_POST['cpf'] ?? '';
         $data_nascimento = $_POST['data_nascimento'] ?? '';
         $nova_senha = $_POST['nova_senha'] ?? '';
 
         $usuarioModel = new Usuario();
-        $user = $usuarioModel->validatePasswordReset($pdo, $cpf, $data_nascimento);
+        $user = $usuarioModel->validatePasswordReset($this->pdo, $cpf, $data_nascimento);
 
         if ($user && !empty($nova_senha)) {
             $usuarioModel->id = $user['id'];
             $usuarioModel->senha_hash = $nova_senha;
-            $usuarioModel->updatePassword($pdo);
+            $usuarioModel->updatePassword($this->pdo);
             
             $_SESSION['success_message'] = "Senha redefinida com sucesso! Você já pode fazer login.";
             header('Location: ' . BASE_URL . '/login');

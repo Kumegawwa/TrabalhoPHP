@@ -1,9 +1,11 @@
 <?php
-class SiteController {
+
+class SiteController extends BaseController {
+
     public function home() {
-        // Redireciona para a lista de cursos se já estiver logado
+        // Redireciona para a dashboard se o usuário já estiver logado
         if (isset($_SESSION['usuario_id'])) {
-            header('Location: ' . BASE_URL . '/cursos');
+            header('Location: ' . BASE_URL . '/dashboard');
             exit;
         }
         require __DIR__ . '/../views/site/home.php';
@@ -14,9 +16,8 @@ class SiteController {
     }
 
     public function listaCursosPublicos() {
-        global $pdo;
         $cursoModel = new Curso();
-        $cursos = $cursoModel->getAll($pdo);
+        $cursos = $cursoModel->getAll($this->pdo);
         require __DIR__ . '/../views/site/lista_cursos.php';
     }
 }
