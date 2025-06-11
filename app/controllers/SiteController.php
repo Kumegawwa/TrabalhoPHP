@@ -1,17 +1,22 @@
 <?php
 class SiteController {
     public function home() {
-        require __DIR__ . '/../app/views/site/home.php';
+        // Redireciona para a lista de cursos se já estiver logado
+        if (isset($_SESSION['usuario_id'])) {
+            header('Location: ' . BASE_URL . '/cursos');
+            exit;
+        }
+        require __DIR__ . '/../views/site/home.php';
     }
 
     public function sobre() {
-        require 'app/views/site/sobre.php';
+        require __DIR__ . '/../views/site/sobre.php';
     }
 
     public function listaCursosPublicos() {
         global $pdo;
         $cursoModel = new Curso();
         $cursos = $cursoModel->getAll($pdo);
-        require 'app/views/site/lista_cursos.php';
+        require __DIR__ . '/../views/site/lista_cursos.php';
     }
 }
