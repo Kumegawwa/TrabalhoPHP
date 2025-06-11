@@ -41,13 +41,13 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
                     
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                         <li><a href="<?= BASE_URL ?>/dashboard" class="<?= (strpos($current_path, 'dashboard') !== false) ? 'active' : '' ?>"><i class="fas fa-home"></i> Dashboard</a></li>
+                        <li><a href="<?= BASE_URL ?>/sobre" class="<?= ($current_path == BASE_URL.'/sobre') ? 'active' : '' ?>"><i class="fas fa-info-circle"></i> Sobre</a></li>
+
                     <?php else: ?>
                         <li><a href="<?= BASE_URL ?>/home" class="<?= ($current_path == BASE_URL.'/home' || $current_path == BASE_URL.'/') ? 'active' : '' ?>"><i class="fas fa-home"></i> Home</a></li>
+                        <li><a href="<?= BASE_URL ?>/lista-cursos" class="<?= ($current_path == BASE_URL.'/lista-cursos') ? 'active' : '' ?>"><i class="fas fa-list"></i> Cursos</a></li>
+                        <li><a href="<?= BASE_URL ?>/sobre" class="<?= ($current_path == BASE_URL.'/sobre') ? 'active' : '' ?>"><i class="fas fa-info-circle"></i> Sobre</a></li>
                     <?php endif; ?>
-
-                    <li><a href="<?= BASE_URL ?>/cursos" class="<?= (strpos($current_path, BASE_URL.'/cursos') === 0) ? 'active' : '' ?>"><i class="fas fa-book"></i> Cursos</a></li>
-                    <li><a href="<?= BASE_URL ?>/sobre" class="<?= ($current_path == BASE_URL.'/sobre') ? 'active' : '' ?>"><i class="fas fa-info-circle"></i> Sobre</a></li>
-                    <li><a href="<?= BASE_URL ?>/lista-cursos" class="<?= ($current_path == BASE_URL.'/lista-cursos') ? 'active' : '' ?>"><i class="fas fa-list"></i> Lista Cursos</a></li>
                     
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                         <li class="dropdown">
