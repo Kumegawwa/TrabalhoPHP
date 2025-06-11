@@ -1,6 +1,12 @@
 <?php
-class Curso {
-    public $id, $titulo, $descricao, $professor_id, $codigo_turma;
+
+class Curso
+{
+    public ?int $id = null;
+    public ?string $titulo = null;
+    public ?string $descricao = null;
+    public ?int $professor_id = null;
+    public ?string $codigo_turma = null;
 
     /**
      * Gera um código alfanumérico único para a turma.
@@ -8,7 +14,8 @@ class Curso {
      * @param int $length O comprimento do código a ser gerado.
      * @return string O código único gerado.
      */
-    private function generateCode($pdo, $length = 6) {
+    private function generateCode(PDO $pdo, int $length = 6): string
+    {
         $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $code = '';
         do {
@@ -16,7 +23,7 @@ class Curso {
             for ($i = 0; $i < $length; $i++) {
                 $code .= $characters[rand(0, strlen($characters) - 1)];
             }
-            // Garante que o código gerado já não exista no banco (chance mínima)
+            // Garante que o código gerado já não exista no banco
         } while ($this->findByCode($pdo, $code));
         
         return $code;
@@ -27,8 +34,8 @@ class Curso {
      * @param PDO $pdo Conexão com o banco de dados.
      * @return bool Retorna true em caso de sucesso, false em caso de falha.
      */
-    public function create($pdo) {
-        // Gera um código único antes de criar o curso
+    public function create(PDO $pdo): bool
+    {
         $this->codigo_turma = $this->generateCode($pdo);
 
         $stmt = $pdo->prepare("INSERT INTO cursos (titulo, descricao, professor_id, codigo_turma) VALUES (?, ?, ?, ?)");
@@ -40,7 +47,8 @@ class Curso {
      * @param PDO $pdo Conexão com o banco de dados.
      * @return array Lista de todos os cursos.
      */
-    public function getAll($pdo) {
+    public function getAll(PDO $pdo): array
+    {
         $stmt = $pdo->query("
             SELECT c.*, u.nome as professor_nome 
             FROM cursos c
@@ -54,9 +62,10 @@ class Curso {
      * Busca um curso específico pelo seu ID.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $id ID do curso.
-     * @return array|false Dados do curso ou false se não encontrado.
+     * @return array|null Dados do curso ou null se não encontrado.
      */
-    public function findById($pdo, $id) {
+    public function findById(PDO $pdo, int $id): ?array
+    {
         $stmt = $pdo->prepare("
             SELECT c.*, u.nome as professor_nome
             FROM cursos c
@@ -64,19 +73,22 @@ class Curso {
             WHERE c.id = ?
         ");
         $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
     }
 
     /**
      * Busca um curso pelo seu código de turma único.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param string $code Código da turma.
-     * @return array|false Dados do curso ou false se não encontrado.
+     * @return array|null Dados do curso ou null se não encontrado.
      */
-    public function findByCode($pdo, $code) {
+    public function findByCode(PDO $pdo, string $code): ?array
+    {
         $stmt = $pdo->prepare("SELECT * FROM cursos WHERE codigo_turma = ?");
         $stmt->execute([$code]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
     }
 
     /**
@@ -85,7 +97,8 @@ class Curso {
      * @param int $professor_id ID do professor.
      * @return array Lista de cursos do professor.
      */
-    public function findByProfessorId($pdo, $professor_id) {
+    public function findByProfessorId(PDO $pdo, int $professor_id): array
+    {
         $stmt = $pdo->prepare("SELECT c.*, u.nome as professor_nome FROM cursos c JOIN usuarios u ON c.professor_id = u.id WHERE c.professor_id = ? ORDER BY c.titulo ASC");
         $stmt->execute([$professor_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -96,7 +109,8 @@ class Curso {
      * @param PDO $pdo Conexão com o banco de dados.
      * @return bool Retorna true em caso de sucesso, false em caso de falha.
      */
-    public function update($pdo) {
+    public function update(PDO $pdo): bool
+    {
         $stmt = $pdo->prepare("UPDATE cursos SET titulo = ?, descricao = ? WHERE id = ? AND professor_id = ?");
         return $stmt->execute([$this->titulo, $this->descricao, $this->id, $this->professor_id]);
     }
@@ -108,7 +122,8 @@ class Curso {
      * @param int $professor_id ID do professor (para verificação de permissão).
      * @return bool Retorna true em caso de sucesso, false em caso de falha.
      */
-    public function delete($pdo, $id, $professor_id) {
+    public function delete(PDO $pdo, int $id, int $professor_id): bool
+    {
         // Garante que apenas o professor dono do curso pode deletá-lo
         $stmt = $pdo->prepare("DELETE FROM cursos WHERE id = ? AND professor_id = ?");
         return $stmt->execute([$id, $professor_id]);
@@ -120,7 +135,8 @@ class Curso {
      * @param int $curso_id ID do curso.
      * @return array Lista de materiais.
      */
-    public function getMateriais($pdo, $curso_id) {
+    public function getMateriais(PDO $pdo, int $curso_id): array
+    {
         $materialModel = new Material();
         return $materialModel->getByCursoId($pdo, $curso_id);
     }
