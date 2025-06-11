@@ -24,6 +24,19 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
 </head>
 <body>
     <header class="navbar">
+        </header>
+    <main class="main-content">
+        <div class="container page-container">
+            <?php if (isset($_SESSION['error_message'])): ?>
+                <div class="alert alert-error"><?= $_SESSION['error_message'] ?></div>
+                <?php unset($_SESSION['error_message']); ?>
+            <?php endif; ?>
+            <?php if (isset($_SESSION['success_message'])): ?>
+                <div class="alert alert-success"><?= $_SESSION['success_message'] ?></div>
+                <?php unset($_SESSION['success_message']); ?>
+            <?php endif; ?>
+<body>
+    <header class="navbar">
         <div class="container">
             <div class="logo-container">
                 <h1 class="logo"><a href="<?= BASE_URL ?>/"><i class="fas fa-graduation-cap"></i> SGA</a></h1>

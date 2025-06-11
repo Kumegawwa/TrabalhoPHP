@@ -31,40 +31,30 @@ if (function_exists('generateCsrfToken')) {
 </head>
 <body>
 
-<?php 
-// O path para os partials precisa ser ajustado com base na localização de login.php
-// Se login.php está em /app/views/auth/login.php
-include __DIR__ . '/../partials/header.php'; 
-?>
-
+<?php include __DIR__ . '/../partials/header.php'; ?>
 <main class="container">
     <div class="card" style="max-width: 400px; margin: 2rem auto;">
         <div class="card-header">Login</div>
         <div class="card-body">
-            <!-- A action do formulário deve apontar para a rota de processamento de login -->
-            <form action="<?= BASE_URL ?>/login" method="POST" data-validate>
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
-
+            <form action="<?= BASE_URL ?>/login" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
                 <div class="form-group">
                     <label class="label" for="email">Email</label>
                     <input class="input" type="email" name="email" id="email" required>
                 </div>
-
                 <div class="form-group">
                     <label class="label" for="senha">Senha</label>
                     <input class="input" type="password" name="senha" id="senha" required>
                 </div>
-
                 <div class="form-group">
-                    <button class="btn btn-primary" type="submit">Entrar</button>
+                    <button class="btn btn-primary w-100" type="submit">Entrar</button>
                 </div>
-
-                <p><a href="<?= BASE_URL ?>/recuperar">Esqueci minha senha</a></p>
+                <p class="text-center"><a href="<?= BASE_URL ?>/recuperar-senha">Esqueci minha senha</a></p>
+                <p class="text-center">Não tem uma conta? <a href="<?= BASE_URL ?>/register">Cadastre-se</a></p>
             </form>
         </div>
     </div>
 </main>
-
 <?php include __DIR__ . '/../partials/footer.php'; ?>
 
 </body>
