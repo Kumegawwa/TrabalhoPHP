@@ -29,17 +29,28 @@
                     </select>
                 </div>
 
+                <!-- CAMPO DE ATRIBUIÇÃO COM CHECKBOXES -->
                 <div class="form-group">
-                    <label for="aluno_id">Atribuir Para</label>
-                    <select name="aluno_id" id="aluno_id" class="select">
-                        <option value="">Todos os Alunos da Turma</option>
-                        <option disabled>--- Atribuição Individual ---</option>
-                        <?php foreach ($viewData['alunos_inscritos'] as $aluno): ?>
-                            <option value="<?= $aluno['id'] ?>" <?= (isset($viewData['material']['aluno_id']) && $viewData['material']['aluno_id'] == $aluno['id']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($aluno['nome']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label>Atribuir Para</label>
+                    <div class="atribuicao-container">
+                        <div class="atribuicao-item select-all-item">
+                            <input type="checkbox" id="select_all_alunos">
+                            <label for="select_all_alunos"><strong>Selecionar Todos / Limpar Seleção</strong></label>
+                        </div>
+                        <small class="text-secondary d-block mb-3" style="padding: 0 0.5rem;">Se nenhum aluno for selecionado, a atividade será visível para toda a turma.</small>
+                        
+                        <?php if (empty($viewData['alunos_inscritos'])): ?>
+                            <p class="text-secondary" style="padding: 0 0.5rem;">Não há alunos inscritos para atribuição individual.</p>
+                        <?php else: ?>
+                            <?php foreach ($viewData['alunos_inscritos'] as $aluno): ?>
+                                <div class="atribuicao-item">
+                                    <input type="checkbox" name="alunos_atribuidos[]" id="aluno_<?= $aluno['id'] ?>" value="<?= $aluno['id'] ?>" 
+                                        <?= in_array($aluno['id'], $viewData['alunos_atribuidos']) ? 'checked' : '' ?>>
+                                    <label for="aluno_<?= $aluno['id'] ?>"><?= htmlspecialchars($aluno['nome']) ?></label>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="d-flex" style="gap: 1rem;">
@@ -50,5 +61,30 @@
         </div>
     </div>
 </div>
+
+<!-- Script para o checkbox "Selecionar Todos" -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select_all_alunos');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function(e) {
+            document.querySelectorAll('input[name="alunos_atribuidos[]"]').forEach(function(checkbox) {
+                checkbox.checked = e.target.checked;
+            });
+        });
+    }
+});
+</script>
+
+<!-- CSS para o container de checkboxes (pode ir para o style.css) -->
+<style>
+.atribuicao-container { border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 0.5rem; max-height: 250px; overflow-y: auto; }
+.atribuicao-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 6px; }
+.atribuicao-item:hover { background-color: rgba(255, 255, 255, 0.03); }
+.atribuicao-item.select-all-item { border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem; }
+.atribuicao-item input[type="checkbox"] { width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
+.atribuicao-item label { margin: 0; font-weight: 400; cursor: pointer; }
+.d-block { display: block; }
+</style>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

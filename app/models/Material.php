@@ -6,23 +6,24 @@ class Material {
     public ?string $titulo = null;
     public ?string $conteudo = null;
     public ?string $tipo = null;
-    public ?int $aluno_id = null; // Coluna para atribuição individual
+    // A propriedade $aluno_id foi removida daqui.
 
     /**
-     * Cria um novo material/atividade no banco de dados.
+     * Cria um novo material/atividade e retorna o seu ID para uso posterior.
      * @param PDO $pdo
-     * @return bool
+     * @return int|null O ID do material recém-criado ou null em caso de falha.
      */
-    public function create(PDO $pdo): bool {
-        $sql = "INSERT INTO materiais_atividades (curso_id, titulo, conteudo, tipo, aluno_id) VALUES (?, ?, ?, ?, ?)";
+    public function create(PDO $pdo): ?int {
+        $sql = "INSERT INTO materiais_atividades (curso_id, titulo, conteudo, tipo) VALUES (?, ?, ?, ?)";
         $stmt = $pdo->prepare($sql);
-        // Se aluno_id for uma string vazia do formulário, converte para null para o banco
-        $alunoIdParaSalvar = empty($this->aluno_id) ? null : $this->aluno_id;
-        return $stmt->execute([$this->curso_id, $this->titulo, $this->conteudo, $this->tipo, $alunoIdParaSalvar]);
+        if ($stmt->execute([$this->curso_id, $this->titulo, $this->conteudo, $this->tipo])) {
+            return (int)$pdo->lastInsertId();
+        }
+        return null;
     }
 
     /**
-     * Busca materiais de um curso, com lógica de permissão para alunos.
+     * Busca materiais de um curso com lógica de permissão para multi-atribuição.
      * @param PDO $pdo
      * @param int $curso_id
      * @param int $user_id
@@ -30,21 +31,24 @@ class Material {
      * @return array
      */
     public function getByCursoId(PDO $pdo, int $curso_id, int $user_id, string $user_profile): array {
-        // Professor vê todos os materiais do curso, com o nome do aluno se for individual
+        // Professor vê todos os materiais e a contagem de atribuições.
         if ($user_profile === 'professor') {
-            $sql = "SELECT m.*, u.nome as aluno_nome 
+            $sql = "SELECT m.*, (SELECT COUNT(*) FROM atividade_atribuicoes WHERE material_id = m.id) as atribuicoes_count
                     FROM materiais_atividades m 
-                    LEFT JOIN usuarios u ON m.aluno_id = u.id
                     WHERE m.curso_id = ? 
                     ORDER BY m.data_postagem DESC";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$curso_id]);
-        } else { 
-            // Aluno vê apenas materiais para todos (aluno_id IS NULL) ou para si mesmo
-            $sql = "SELECT m.*, u.nome as aluno_nome 
-                    FROM materiais_atividades m
-                    LEFT JOIN usuarios u ON m.aluno_id = u.id
-                    WHERE m.curso_id = ? AND (m.aluno_id IS NULL OR m.aluno_id = ?)
+        } else { // Aluno
+            // Lógica: um material é para todos SE ele não tiver NENHUMA atribuição na tabela 'atividade_atribuicoes'.
+            // Se tiver atribuições, o aluno só o vê se uma delas for para ele.
+            $sql = "SELECT m.* FROM materiais_atividades m
+                    WHERE m.curso_id = ? 
+                    AND (
+                        NOT EXISTS (SELECT 1 FROM atividade_atribuicoes WHERE material_id = m.id)
+                        OR 
+                        EXISTS (SELECT 1 FROM atividade_atribuicoes WHERE material_id = m.id AND aluno_id = ?)
+                    )
                     ORDER BY m.data_postagem DESC";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$curso_id, $user_id]);
@@ -71,10 +75,9 @@ class Material {
      * @return bool
      */
     public function update(PDO $pdo): bool {
-        $sql = "UPDATE materiais_atividades SET titulo = ?, conteudo = ?, tipo = ?, aluno_id = ? WHERE id = ?";
+        $sql = "UPDATE materiais_atividades SET titulo = ?, conteudo = ?, tipo = ? WHERE id = ?";
         $stmt = $pdo->prepare($sql);
-        $alunoIdParaSalvar = empty($this->aluno_id) ? null : $this->aluno_id;
-        return $stmt->execute([$this->titulo, $this->conteudo, $this->tipo, $alunoIdParaSalvar, $this->id]);
+        return $stmt->execute([$this->titulo, $this->conteudo, $this->tipo, $this->id]);
     }
 
     /**

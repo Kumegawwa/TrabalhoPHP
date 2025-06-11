@@ -12,7 +12,7 @@ class MaterialController extends BaseController {
             exit;
         }
 
-        // Busca alunos para o dropdown de atribuição
+        // Busca alunos para preencher os checkboxes
         $inscricaoModel = new Inscricao();
         $alunos_inscritos = $inscricaoModel->findUsersByCourse($this->pdo, $curso_id);
 
@@ -22,7 +22,8 @@ class MaterialController extends BaseController {
             'material' => null, 
             'curso_id' => $curso_id, 
             'is_edit' => false,
-            'alunos_inscritos' => $alunos_inscritos
+            'alunos_inscritos' => $alunos_inscritos,
+            'alunos_atribuidos' => [] // Vazio na criação
         ];
         require __DIR__ . '/../views/materiais/form.php';
     }
@@ -34,9 +35,17 @@ class MaterialController extends BaseController {
         $material->titulo = $_POST['titulo'];
         $material->conteudo = $_POST['conteudo'];
         $material->tipo = $_POST['tipo'];
-        $material->aluno_id = $_POST['aluno_id'] ?? null; // Pega o aluno_id do form
         
-        if ($material->create($this->pdo)) {
+        $novoMaterialId = $material->create($this->pdo);
+
+        if ($novoMaterialId) {
+            // Se alunos foram selecionados no formulário, cria as atribuições
+            if (isset($_POST['alunos_atribuidos']) && is_array($_POST['alunos_atribuidos'])) {
+                $atribuicaoModel = new AtividadeAtribuicao();
+                foreach ($_POST['alunos_atribuidos'] as $aluno_id) {
+                    $atribuicaoModel->create($this->pdo, $novoMaterialId, (int)$aluno_id);
+                }
+            }
             $_SESSION['success_message'] = 'Material adicionado com sucesso!';
         } else {
             $_SESSION['error_message'] = 'Erro ao adicionar material.';
@@ -61,9 +70,13 @@ class MaterialController extends BaseController {
             exit;
         }
 
-        // Busca alunos para o dropdown de atribuição
+        // Busca alunos para preencher os checkboxes
         $inscricaoModel = new Inscricao();
         $alunos_inscritos = $inscricaoModel->findUsersByCourse($this->pdo, $material['curso_id']);
+        
+        // Busca os alunos que já estão com a atividade atribuída para pré-marcar os checkboxes
+        $atribuicaoModel = new AtividadeAtribuicao();
+        $alunos_atribuidos = $atribuicaoModel->findAlunosByMaterial($this->pdo, $id);
 
         $viewData = [
             'titulo_pagina' => 'Editar Material', 
@@ -71,7 +84,8 @@ class MaterialController extends BaseController {
             'material' => $material, 
             'curso_id' => $material['curso_id'], 
             'is_edit' => true,
-            'alunos_inscritos' => $alunos_inscritos
+            'alunos_inscritos' => $alunos_inscritos,
+            'alunos_atribuidos' => $alunos_atribuidos
         ];
         require __DIR__ . '/../views/materiais/form.php';
     }
@@ -97,9 +111,17 @@ class MaterialController extends BaseController {
         $materialToUpdate->titulo = $_POST['titulo'];
         $materialToUpdate->conteudo = $_POST['conteudo'];
         $materialToUpdate->tipo = $_POST['tipo'];
-        $materialToUpdate->aluno_id = $_POST['aluno_id'] ?? null; // Pega o aluno_id do form
         
         if ($materialToUpdate->update($this->pdo)) {
+            $atribuicaoModel = new AtividadeAtribuicao();
+            // 1. Limpa todas as atribuições antigas para este material
+            $atribuicaoModel->deleteByMaterial($this->pdo, $id);
+            // 2. Adiciona as novas atribuições, se houver
+            if (isset($_POST['alunos_atribuidos']) && is_array($_POST['alunos_atribuidos'])) {
+                foreach ($_POST['alunos_atribuidos'] as $aluno_id) {
+                    $atribuicaoModel->create($this->pdo, $id, (int)$aluno_id);
+                }
+            }
             $_SESSION['success_message'] = 'Material atualizado com sucesso!';
         } else {
             $_SESSION['error_message'] = 'Erro ao atualizar material.';

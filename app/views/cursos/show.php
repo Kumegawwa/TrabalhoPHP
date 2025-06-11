@@ -30,6 +30,7 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
 ?>
 
 <?php if ($podeVerConteudo): ?>
+    <!-- Seção de Materiais -->
     <div class="d-flex justify-content-between align-items-center my-4">
         <h2>Materiais e Atividades</h2>
         <?php if ($_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
@@ -46,8 +47,9 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
                     <div class="d-flex justify-content-between">
                         <div>
                             <h5 class="card-title"><?= htmlspecialchars($material['titulo']) ?> (<?= ucfirst(htmlspecialchars($material['tipo'])) ?>)</h5>
-                            <?php if ($_SESSION['perfil'] === 'professor' && !empty($material['aluno_id'])): ?>
-                                <span class="badge badge-individual">Atribuído a: <?= htmlspecialchars($material['aluno_nome']) ?></span>
+                            <!-- MOSTRA SE A ATIVIDADE É INDIVIDUAL (Visível para o professor) -->
+                            <?php if ($_SESSION['perfil'] === 'professor' && $material['atribuicoes_count'] > 0): ?>
+                                <span class="badge badge-individual">Atribuição Específica (<?= $material['atribuicoes_count'] ?> aluno(s))</span>
                             <?php endif; ?>
                         </div>
                         <?php if ($_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
@@ -80,6 +82,7 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
 <?php endif; ?>
 
 
+<!-- SEÇÃO DE ALUNOS INSCRITOS (Visível apenas para o professor) -->
 <?php if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
 <section class="alunos-inscritos mt-5">
     <hr>
@@ -113,6 +116,7 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>
 
+<!-- ESTILOS LOCAIS (Você pode mover para o seu style.css se preferir) -->
 <style>
 .list-group { list-style: none; padding: 0; }
 .list-group-item { 
