@@ -1,13 +1,8 @@
-RewriteEngine On
-RewriteBase /TrabalhoPHP/
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /TrabalhoPHP/
 
-# Impede acesso direto a arquivos fora da pasta public, exceto os próprios arquivos da pasta public
-RewriteCond %{REQUEST_URI} !^/TrabalhoPHP/public/
-
-# Permite acesso a recursos existentes na pasta public (css, js, images)
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !^/TrabalhoPHP/public/
-
-# Redireciona tudo mais para public/index.php
-RewriteRule ^(.*)$ public/index.php?url=$1 [L,QSA]
+    # Redireciona todas as requisições para a pasta public/
+    RewriteRule ^$ public/ [L]
+    RewriteRule (.*) public/$1 [L]
+</IfModule>
