@@ -1,16 +1,23 @@
 <?php
+
 class Usuario {
-    public $id, $nome, $email, $senha_hash, $perfil, $cpf, $data_nascimento;
+    public ?int $id = null;
+    public ?string $nome = null;
+    public ?string $email = null;
+    public ?string $senha_hash = null;
+    public ?string $perfil = null;
+    public ?string $cpf = null;
+    public ?string $data_nascimento = null;
 
     /**
      * Cria um novo usuário no banco de dados.
      * @param PDO $pdo Conexão com o banco de dados.
-     * @return bool Retorna true em caso de sucesso, false em caso de falha.
+     * @return bool
      */
-    public function create($pdo) {
+    public function create(PDO $pdo): bool
+    {
         $sql = "INSERT INTO usuarios (nome, email, senha_hash, perfil, cpf, data_nascimento) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $pdo->prepare($sql);
-        // Hasheia a senha antes de salvar
         $this->senha_hash = password_hash($this->senha_hash, PASSWORD_DEFAULT);
         return $stmt->execute([$this->nome, $this->email, $this->senha_hash, $this->perfil, $this->cpf, $this->data_nascimento]);
     }
@@ -19,32 +26,37 @@ class Usuario {
      * Busca um usuário pelo seu ID.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $id ID do usuário.
-     * @return array|false Dados do usuário ou false se não encontrado.
+     * @return array|null
      */
-    public function findById($pdo, $id) {
+    public function findById(PDO $pdo, int $id): ?array
+    {
         $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE id = ?");
         $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
     }
 
     /**
      * Busca um usuário pelo seu email.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param string $email Email do usuário.
-     * @return array|false Dados do usuário ou false se não encontrado.
+     * @return array|null
      */
-    public function findByEmail($pdo, $email) {
+    public function findByEmail(PDO $pdo, string $email): ?array
+    {
         $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ?");
         $stmt->execute([$email]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
     }
 
     /**
      * Atualiza os dados de um usuário (exceto senha).
      * @param PDO $pdo Conexão com o banco de dados.
-     * @return bool Retorna true em caso de sucesso, false em caso de falha.
+     * @return bool
      */
-    public function update($pdo) {
+    public function update(PDO $pdo): bool
+    {
         $sql = "UPDATE usuarios SET nome = ?, email = ?, perfil = ?, cpf = ?, data_nascimento = ? WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         return $stmt->execute([$this->nome, $this->email, $this->perfil, $this->cpf, $this->data_nascimento, $this->id]);
@@ -53,9 +65,10 @@ class Usuario {
     /**
      * Atualiza apenas a senha de um usuário.
      * @param PDO $pdo Conexão com o banco de dados.
-     * @return bool Retorna true em caso de sucesso, false em caso de falha.
+     * @return bool
      */
-    public function updatePassword($pdo) {
+    public function updatePassword(PDO $pdo): bool
+    {
         $sql = "UPDATE usuarios SET senha_hash = ? WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         $this->senha_hash = password_hash($this->senha_hash, PASSWORD_DEFAULT);
@@ -66,9 +79,10 @@ class Usuario {
      * Deleta um usuário do banco de dados.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $id ID do usuário a ser deletado.
-     * @return bool Retorna true em caso de sucesso, false em caso de falha.
+     * @return bool
      */
-    public function delete($pdo, $id) {
+    public function delete(PDO $pdo, int $id): bool
+    {
         $stmt = $pdo->prepare("DELETE FROM usuarios WHERE id = ?");
         return $stmt->execute([$id]);
     }
@@ -78,22 +92,24 @@ class Usuario {
      * @param PDO $pdo Conexão com o banco de dados.
      * @param string $cpf CPF do usuário.
      * @param string $data_nascimento Data de nascimento do usuário.
-     * @return array|false Dados do usuário ou false se as credenciais não baterem.
+     * @return array|null
      */
-    public function validatePasswordReset($pdo, $cpf, $data_nascimento) {
+    public function validatePasswordReset(PDO $pdo, string $cpf, string $data_nascimento): ?array
+    {
         $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE cpf = ? AND data_nascimento = ?");
         $stmt->execute([$cpf, $data_nascimento]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
     }
 
     /**
      * Busca todos os cursos em que um aluno específico está inscrito.
-     * CORREÇÃO: Adicionado JOIN com a tabela de usuários para buscar o nome do professor.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $aluno_id ID do aluno.
-     * @return array Lista de cursos em que o aluno está inscrito.
+     * @return array
      */
-    public function getCursosInscritos($pdo, $aluno_id) {
+    public function getCursosInscritos(PDO $pdo, int $aluno_id): array
+    {
         $stmt = $pdo->prepare("
             SELECT c.*, u.nome as professor_nome
             FROM inscricoes_cursos ic
@@ -110,7 +126,20 @@ class Usuario {
      * Verifica se o usuário logado é um professor.
      * @return bool
      */
-    public function isProfessor() {
+    public function isProfessor(): bool
+    {
         return isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor';
+    }
+
+    /**
+     * Conta o total de usuários por perfil.
+     * @param PDO $pdo Conexão com o banco de dados.
+     * @param string $perfil O perfil a ser contado ('aluno' ou 'professor').
+     * @return int O número de usuários com o perfil especificado.
+     */
+    public function countByProfile(PDO $pdo, string $perfil): int {
+        $stmt = $pdo->prepare("SELECT COUNT(id) FROM usuarios WHERE perfil = ?");
+        $stmt->execute([$perfil]);
+        return (int) $stmt->fetchColumn();
     }
 }

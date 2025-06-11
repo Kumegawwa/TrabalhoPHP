@@ -23,21 +23,19 @@ class Curso
             for ($i = 0; $i < $length; $i++) {
                 $code .= $characters[rand(0, strlen($characters) - 1)];
             }
-            // Garante que o código gerado já não exista no banco
         } while ($this->findByCode($pdo, $code));
         
         return $code;
     }
 
     /**
-     * Cria um novo curso no banco de dados, incluindo um código de turma gerado automaticamente.
+     * Cria um novo curso no banco de dados.
      * @param PDO $pdo Conexão com o banco de dados.
-     * @return bool Retorna true em caso de sucesso, false em caso de falha.
+     * @return bool
      */
     public function create(PDO $pdo): bool
     {
         $this->codigo_turma = $this->generateCode($pdo);
-
         $stmt = $pdo->prepare("INSERT INTO cursos (titulo, descricao, professor_id, codigo_turma) VALUES (?, ?, ?, ?)");
         return $stmt->execute([$this->titulo, $this->descricao, $this->professor_id, $this->codigo_turma]);
     }
@@ -45,7 +43,7 @@ class Curso
     /**
      * Busca todos os cursos, juntando o nome do professor.
      * @param PDO $pdo Conexão com o banco de dados.
-     * @return array Lista de todos os cursos.
+     * @return array
      */
     public function getAll(PDO $pdo): array
     {
@@ -62,7 +60,7 @@ class Curso
      * Busca um curso específico pelo seu ID.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $id ID do curso.
-     * @return array|null Dados do curso ou null se não encontrado.
+     * @return array|null
      */
     public function findById(PDO $pdo, int $id): ?array
     {
@@ -81,7 +79,7 @@ class Curso
      * Busca um curso pelo seu código de turma único.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param string $code Código da turma.
-     * @return array|null Dados do curso ou null se não encontrado.
+     * @return array|null
      */
     public function findByCode(PDO $pdo, string $code): ?array
     {
@@ -95,7 +93,7 @@ class Curso
      * Busca todos os cursos criados por um professor específico.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $professor_id ID do professor.
-     * @return array Lista de cursos do professor.
+     * @return array
      */
     public function findByProfessorId(PDO $pdo, int $professor_id): array
     {
@@ -107,7 +105,7 @@ class Curso
     /**
      * Atualiza os dados de um curso existente.
      * @param PDO $pdo Conexão com o banco de dados.
-     * @return bool Retorna true em caso de sucesso, false em caso de falha.
+     * @return bool
      */
     public function update(PDO $pdo): bool
     {
@@ -120,11 +118,10 @@ class Curso
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $id ID do curso.
      * @param int $professor_id ID do professor (para verificação de permissão).
-     * @return bool Retorna true em caso de sucesso, false em caso de falha.
+     * @return bool
      */
     public function delete(PDO $pdo, int $id, int $professor_id): bool
     {
-        // Garante que apenas o professor dono do curso pode deletá-lo
         $stmt = $pdo->prepare("DELETE FROM cursos WHERE id = ? AND professor_id = ?");
         return $stmt->execute([$id, $professor_id]);
     }
@@ -133,11 +130,38 @@ class Curso
      * Busca todos os materiais associados a um curso.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $curso_id ID do curso.
-     * @return array Lista de materiais.
+     * @return array
      */
     public function getMateriais(PDO $pdo, int $curso_id): array
     {
         $materialModel = new Material();
         return $materialModel->getByCursoId($pdo, $curso_id);
+    }
+
+    /**
+     * Conta o total de cursos na plataforma.
+     * @param PDO $pdo Conexão com o banco de dados.
+     * @return int O número total de cursos.
+     */
+    public function countAll(PDO $pdo): int {
+        $stmt = $pdo->query("SELECT COUNT(id) FROM cursos");
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Busca os cursos mais recentes para exibir na home.
+     * @param PDO $pdo Conexão com o banco de dados.
+     * @param int $limit O número de cursos a serem retornados.
+     * @return array Uma lista dos cursos mais recentes.
+     */
+    public function getLatest(PDO $pdo, int $limit = 3): array {
+        $stmt = $pdo->query("
+            SELECT c.*, u.nome as professor_nome 
+            FROM cursos c
+            JOIN usuarios u ON c.professor_id = u.id
+            ORDER BY c.data_criacao DESC
+            LIMIT " . $limit
+        );
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
