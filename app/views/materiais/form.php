@@ -24,8 +24,21 @@
                 <div class="form-group">
                     <label for="tipo">Tipo</label>
                     <select name="tipo" id="tipo" class="select">
-                        <option value="material" <?= (isset($viewData['material']) && $viewData['material']['tipo'] == 'material') ? 'selected' : '' ?>>Material de Apoio</option>
-                        <option value="atividade" <?= (isset($viewData['material']) && $viewData['material']['tipo'] == 'atividade') ? 'selected' : '' ?>>Atividade Avaliativa</option>
+                        <option value="material" <?= (isset($viewData['material']['tipo']) && $viewData['material']['tipo'] == 'material') ? 'selected' : '' ?>>Material de Apoio</option>
+                        <option value="atividade" <?= (isset($viewData['material']['tipo']) && $viewData['material']['tipo'] == 'atividade') ? 'selected' : '' ?>>Atividade Avaliativa</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="aluno_id">Atribuir Para</label>
+                    <select name="aluno_id" id="aluno_id" class="select">
+                        <option value="">Todos os Alunos da Turma</option>
+                        <option disabled>--- Atribuição Individual ---</option>
+                        <?php foreach ($viewData['alunos_inscritos'] as $aluno): ?>
+                            <option value="<?= $aluno['id'] ?>" <?= (isset($viewData['material']['aluno_id']) && $viewData['material']['aluno_id'] == $aluno['id']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($aluno['nome']) ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 

@@ -12,7 +12,18 @@ class MaterialController extends BaseController {
             exit;
         }
 
-        $viewData = ['titulo_pagina' => 'Adicionar Material/Atividade', 'action' => BASE_URL . '/materiais/store', 'material' => null, 'curso_id' => $curso_id, 'is_edit' => false];
+        // Busca alunos para o dropdown de atribuição
+        $inscricaoModel = new Inscricao();
+        $alunos_inscritos = $inscricaoModel->findUsersByCourse($this->pdo, $curso_id);
+
+        $viewData = [
+            'titulo_pagina' => 'Adicionar Material/Atividade', 
+            'action' => BASE_URL . '/materiais/store', 
+            'material' => null, 
+            'curso_id' => $curso_id, 
+            'is_edit' => false,
+            'alunos_inscritos' => $alunos_inscritos
+        ];
         require __DIR__ . '/../views/materiais/form.php';
     }
 
@@ -23,6 +34,7 @@ class MaterialController extends BaseController {
         $material->titulo = $_POST['titulo'];
         $material->conteudo = $_POST['conteudo'];
         $material->tipo = $_POST['tipo'];
+        $material->aluno_id = $_POST['aluno_id'] ?? null; // Pega o aluno_id do form
         
         if ($material->create($this->pdo)) {
             $_SESSION['success_message'] = 'Material adicionado com sucesso!';
@@ -49,7 +61,18 @@ class MaterialController extends BaseController {
             exit;
         }
 
-        $viewData = ['titulo_pagina' => 'Editar Material', 'action' => BASE_URL . '/materiais/update/' . $id, 'material' => $material, 'curso_id' => $material['curso_id'], 'is_edit' => true];
+        // Busca alunos para o dropdown de atribuição
+        $inscricaoModel = new Inscricao();
+        $alunos_inscritos = $inscricaoModel->findUsersByCourse($this->pdo, $material['curso_id']);
+
+        $viewData = [
+            'titulo_pagina' => 'Editar Material', 
+            'action' => BASE_URL . '/materiais/update/' . $id, 
+            'material' => $material, 
+            'curso_id' => $material['curso_id'], 
+            'is_edit' => true,
+            'alunos_inscritos' => $alunos_inscritos
+        ];
         require __DIR__ . '/../views/materiais/form.php';
     }
 
@@ -74,8 +97,7 @@ class MaterialController extends BaseController {
         $materialToUpdate->titulo = $_POST['titulo'];
         $materialToUpdate->conteudo = $_POST['conteudo'];
         $materialToUpdate->tipo = $_POST['tipo'];
-        // O curso_id não deve ser alterado na edição do material
-        $materialToUpdate->curso_id = $material['curso_id'];
+        $materialToUpdate->aluno_id = $_POST['aluno_id'] ?? null; // Pega o aluno_id do form
         
         if ($materialToUpdate->update($this->pdo)) {
             $_SESSION['success_message'] = 'Material atualizado com sucesso!';

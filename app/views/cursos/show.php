@@ -30,7 +30,6 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
 ?>
 
 <?php if ($podeVerConteudo): ?>
-    <!-- Seção de Materiais -->
     <div class="d-flex justify-content-between align-items-center my-4">
         <h2>Materiais e Atividades</h2>
         <?php if ($_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
@@ -47,7 +46,7 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
                     <div class="d-flex justify-content-between">
                         <div>
                             <h5 class="card-title"><?= htmlspecialchars($material['titulo']) ?> (<?= ucfirst(htmlspecialchars($material['tipo'])) ?>)</h5>
-                            <?php if (!empty($material['aluno_id'])): ?>
+                            <?php if ($_SESSION['perfil'] === 'professor' && !empty($material['aluno_id'])): ?>
                                 <span class="badge badge-individual">Atribuído a: <?= htmlspecialchars($material['aluno_nome']) ?></span>
                             <?php endif; ?>
                         </div>
@@ -81,7 +80,6 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
 <?php endif; ?>
 
 
-<!-- SEÇÃO DE ALUNOS INSCRITOS (Visível apenas para o professor) -->
 <?php if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
 <section class="alunos-inscritos mt-5">
     <hr>
@@ -115,7 +113,6 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>
 
-<!-- ESTILOS LOCAIS (Você pode mover para o seu style.css se preferir) -->
 <style>
 .list-group { list-style: none; padding: 0; }
 .list-group-item { 
@@ -127,5 +124,5 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
 .mr-2 { margin-right: 0.5rem; }
 .mt-5 { margin-top: 3rem !important; }
 .badge { display: inline-block; padding: .35em .65em; font-size: .75em; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: .25rem; }
-.badge-individual { color: #fff; background-color: var(--primary-accent); }
+.badge-individual { color: #fff; background-color: var(--primary-accent); opacity: 0.8; }
 </style>
