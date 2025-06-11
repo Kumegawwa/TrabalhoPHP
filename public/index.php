@@ -1,49 +1,31 @@
 <?php
-/**
- * Ponto de Entrada (Front-Controller) da Aplicação SGA.
- * Todas as requisições são direcionadas para este arquivo.
- */
-
-// Garante que a sessão seja iniciada em todas as requisições.
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 1. CARREGAMENTO DE ARQUIVOS ESSENCIAIS E CONFIGURAÇÕES
-require_once __DIR__ . '/../config/database.php'; // Conexão com o banco ($pdo)
-require_once __DIR__ . '/../helpers/csrf.php';      // Funções de proteção CSRF
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../helpers/csrf.php';
 
-/**
- * Autoloader simples para carregar classes de Models e Controllers automaticamente.
- */
 spl_autoload_register(function ($class_name) {
-    // Procura a classe na pasta de controllers (incluindo o BaseController)
-    $controller_file = __DIR__ . '/../app/controllers/' . $class_name . '.php';
-    if (file_exists($controller_file)) {
-        require_once $controller_file;
-        return;
-    }
-
-    // Procura a classe na pasta de models
-    $model_file = __DIR__ . '/../app/models/' . $class_name . '.php';
-    if (file_exists($model_file)) {
-        require_once $model_file;
-        return;
+    $paths = [
+        __DIR__ . '/../app/controllers/' . $class_name . '.php',
+        __DIR__ . '/../app/models/' . $class_name . '.php'
+    ];
+    foreach ($paths as $file) {
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
     }
 });
 
-// Define uma constante global para a URL base, facilitando a criação de links.
 define('BASE_URL', '/TrabalhoPHP');
 
-// 2. SISTEMA DE ROTEAMENTO
-// Analisa a URL requisitada para determinar a rota.
 $request_uri = $_SERVER['REQUEST_URI'];
 $base_path = str_replace('/public/index.php', '', $_SERVER['SCRIPT_NAME']);
 $route = '/' . trim(str_replace($base_path, '', strtok($request_uri, '?')), '/');
 
-// Mapeamento de todas as rotas da aplicação para [Controller, Método]
 $routes = [
-    // Rotas GET (carregamento de páginas)
     'GET' => [
         '/' => ['SiteController', 'home'],
         '/home' => ['SiteController', 'home'],
@@ -61,7 +43,6 @@ $routes = [
         '/materiais/create/{curso_id:[0-9]+}' => ['MaterialController', 'create'],
         '/materiais/edit/{id:[0-9]+}' => ['MaterialController', 'edit'],
     ],
-    // Rotas POST (submissão de formulários)
     'POST' => [
         '/login' => ['AuthController', 'processLogin'],
         '/register' => ['UsuarioController', 'store'],
@@ -70,20 +51,19 @@ $routes = [
         '/cursos/join' => ['CursoController', 'joinByCode'],
         '/cursos/update/{id:[0-9]+}' => ['CursoController', 'update'],
         '/cursos/delete/{id:[0-9]+}' => ['CursoController', 'delete'],
-        '/cursos/leave/{id:[0-9]+}' => ['CursoController', 'leave'], // <-- ROTA ADICIONADA
+        '/cursos/leave/{id:[0-9]+}' => ['CursoController', 'leave'],
+        '/cursos/{curso_id:[0-9]+}/remove-aluno/{aluno_id:[0-9]+}' => ['CursoController', 'removeAluno'],
         '/materiais/store' => ['MaterialController', 'store'],
         '/materiais/update/{id:[0-9]+}' => ['MaterialController', 'update'],
         '/materiais/delete/{id:[0-9]+}' => ['MaterialController', 'delete'],
     ]
 ];
 
-// 3. LÓGICA DE DESPACHO DA ROTA (DISPATCHER)
 $method = $_SERVER['REQUEST_METHOD'];
 $controllerName = null;
 $actionName = null;
 $params = [];
 
-// Encontra a rota correspondente na lista de rotas
 if (isset($routes[$method])) {
     foreach ($routes[$method] as $routePattern => $handler) {
         $pattern = preg_replace_callback('/\{([a-zA-Z0-9_]+):([^\}]+)\}/', function($m) { return '(?P<'.$m[1].'>'.$m[2].')'; }, $routePattern);
@@ -102,7 +82,6 @@ if (isset($routes[$method])) {
     }
 }
 
-// Executa o controller e o método correspondente
 if ($controllerName && $actionName) {
     if ($method === 'POST' && !verifyCsrfToken()) {
         $_SESSION['error_message'] = 'Falha de segurança (CSRF). Por favor, tente novamente.';

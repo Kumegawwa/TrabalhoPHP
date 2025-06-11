@@ -2,27 +2,18 @@
 
 class CursoController extends BaseController {
 
-    /**
-     * Exibe a lista pública de todos os cursos.
-     */
     public function index() {
         $cursoModel = new Curso();
         $cursos = $cursoModel->getAll($this->pdo);
         require __DIR__ . '/../views/site/lista_cursos.php';
     }
 
-    /**
-     * Exibe o formulário para criar um novo curso.
-     */
     public function create() {
         $this->checkProfessor();
         $viewData = ['titulo_pagina' => 'Criar Novo Curso', 'action' => BASE_URL . '/cursos/store', 'curso' => null, 'is_edit' => false];
         require __DIR__ . '/../views/cursos/form.php';
     }
 
-    /**
-     * Salva um novo curso no banco de dados.
-     */
     public function store() {
         $this->checkProfessor();
         $curso = new Curso();
@@ -39,9 +30,6 @@ class CursoController extends BaseController {
         exit;
     }
 
-    /**
-     * Mostra detalhes de um curso específico e seus materiais.
-     */
     public function show(int $id) {
         $this->checkAuth();
         $cursoModel = new Curso();
@@ -49,7 +37,7 @@ class CursoController extends BaseController {
 
         if (!$curso) { http_response_code(404); echo "Curso não encontrado"; exit; }
         
-        $materiais = $cursoModel->getMateriais($this->pdo, $id);
+        $materiais = $cursoModel->getMateriais($this->pdo, $id, $_SESSION['usuario_id'], $_SESSION['perfil']);
         
         $alunoInscrito = false;
         if ($_SESSION['perfil'] === 'aluno') {
@@ -58,13 +46,17 @@ class CursoController extends BaseController {
                 $alunoInscrito = true;
             }
         }
+
+        // Busca a lista de alunos se o usuário for o professor do curso
+        $alunos_inscritos = [];
+        if ($_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']) {
+            $inscricaoModel = new Inscricao();
+            $alunos_inscritos = $inscricaoModel->findUsersByCourse($this->pdo, $id);
+        }
         
         require __DIR__ . '/../views/cursos/show.php';
     }
 
-    /**
-     * Exibe o formulário para editar um curso existente.
-     */
     public function edit(int $id) {
         $this->checkProfessor();
         $cursoModel = new Curso();
@@ -80,9 +72,6 @@ class CursoController extends BaseController {
         require __DIR__ . '/../views/cursos/form.php';
     }
 
-    /**
-     * Atualiza um curso no banco de dados.
-     */
     public function update(int $id) {
         $this->checkProfessor();
         $curso = new Curso();
@@ -100,14 +89,10 @@ class CursoController extends BaseController {
         exit;
     }
     
-    /**
-     * Permite que um PROFESSOR delete uma turma.
-     */
     public function delete(int $id) {
         $this->checkProfessor();
         $cursoModel = new Curso();
         
-        // Validação extra para garantir que o professor logado é o dono do curso
         $curso = $cursoModel->findById($this->pdo, $id);
         if (!$curso || $curso['professor_id'] != $_SESSION['usuario_id']) {
             $_SESSION['error_message'] = "Você não tem permissão para excluir este curso.";
@@ -124,9 +109,6 @@ class CursoController extends BaseController {
         exit;
     }
     
-    /**
-     * Permite que um ALUNO se inscreva em uma turma usando um código.
-     */
     public function joinByCode() {
         $this->checkAuth();
         if ($_SESSION['perfil'] !== 'aluno') {
@@ -165,11 +147,8 @@ class CursoController extends BaseController {
         exit;
     }
 
-    /**
-     * Permite que um ALUNO saia de uma turma (se desinscreva).
-     */
     public function leave(int $curso_id) {
-        $this->checkAuth(); // Garante que o usuário está logado
+        $this->checkAuth();
         if ($_SESSION['perfil'] !== 'aluno') {
             $_SESSION['error_message'] = "Apenas alunos podem sair de turmas.";
             header('Location: ' . BASE_URL . '/dashboard');
@@ -185,6 +164,31 @@ class CursoController extends BaseController {
         }
 
         header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    /**
+     * Permite que um professor remova um aluno de sua turma.
+     */
+    public function removeAluno(int $curso_id, int $aluno_id) {
+        $this->checkProfessor();
+
+        $cursoModel = new Curso();
+        $curso = $cursoModel->findById($this->pdo, $curso_id);
+        if (!$curso || $curso['professor_id'] != $_SESSION['usuario_id']) {
+            $_SESSION['error_message'] = "Você não tem permissão para remover alunos desta turma.";
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit;
+        }
+
+        $inscricaoModel = new Inscricao();
+        if ($inscricaoModel->deleteByAlunoAndCurso($this->pdo, $aluno_id, $curso_id)) {
+            $_SESSION['success_message'] = "Aluno removido da turma com sucesso.";
+        } else {
+            $_SESSION['error_message'] = "Ocorreu um erro ao remover o aluno.";
+        }
+
+        header('Location: ' . BASE_URL . "/cursos/show/{$curso_id}");
         exit;
     }
 }

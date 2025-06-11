@@ -12,7 +12,6 @@
 </div>
 
 <?php
-// Condição para o professor, dono do curso, ver o código da turma
 if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']):
 ?>
 <div class="alert alert-success">
@@ -26,12 +25,12 @@ if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor' && $curso[
 <hr>
 
 <?php
-// Variável para simplificar a lógica de permissão de visualização do conteúdo
 $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']) 
                   || (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'aluno' && $alunoInscrito);
 ?>
 
 <?php if ($podeVerConteudo): ?>
+    <!-- Seção de Materiais -->
     <div class="d-flex justify-content-between align-items-center my-4">
         <h2>Materiais e Atividades</h2>
         <?php if ($_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
@@ -46,11 +45,16 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
-                        <h5 class="card-title"><?= htmlspecialchars($material['titulo']) ?> (<?= ucfirst(htmlspecialchars($material['tipo'])) ?>)</h5>
+                        <div>
+                            <h5 class="card-title"><?= htmlspecialchars($material['titulo']) ?> (<?= ucfirst(htmlspecialchars($material['tipo'])) ?>)</h5>
+                            <?php if (!empty($material['aluno_id'])): ?>
+                                <span class="badge badge-individual">Atribuído a: <?= htmlspecialchars($material['aluno_nome']) ?></span>
+                            <?php endif; ?>
+                        </div>
                         <?php if ($_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
-                            <div class="material-actions">
+                            <div class="material-actions d-flex gap-2">
                                 <a href="<?= BASE_URL ?>/materiais/edit/<?= $material['id'] ?>" class="btn btn-sm btn-secondary" title="Editar"><i class="fas fa-pen"></i></a>
-                                <form action="<?= BASE_URL ?>/materiais/delete/<?= $material['id'] ?>" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.')">
+                                <form action="<?= BASE_URL ?>/materiais/delete/<?= $material['id'] ?>" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.')">
                                     <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
                                     <button type="submit" class="btn btn-sm btn-danger" title="Excluir"><i class="fas fa-trash"></i></button>
                                 </form>
@@ -76,4 +80,52 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
     </div>
 <?php endif; ?>
 
+
+<!-- SEÇÃO DE ALUNOS INSCRITOS (Visível apenas para o professor) -->
+<?php if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
+<section class="alunos-inscritos mt-5">
+    <hr>
+    <h2 class="my-4">Alunos Inscritos na Turma</h2>
+    <div class="card">
+        <div class="card-body">
+            <?php if (empty($alunos_inscritos)): ?>
+                <p class="text-center text-secondary">Ainda não há alunos inscritos nesta turma.</p>
+            <?php else: ?>
+                <ul class="list-group">
+                    <?php foreach ($alunos_inscritos as $aluno): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-user mr-2 text-secondary"></i>
+                                <strong><?= htmlspecialchars($aluno['nome']) ?></strong>
+                                <br>
+                                <small class="text-secondary"><?= htmlspecialchars($aluno['email']) ?></small>
+                            </div>
+                            <form action="<?= BASE_URL ?>/cursos/<?= $curso['id'] ?>/remove-aluno/<?= $aluno['id'] ?>" method="POST" onsubmit="return confirm('Tem certeza que deseja remover este aluno da turma?');">
+                                <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Remover Aluno"><i class="fas fa-user-times"></i> Remover</button>
+                            </form>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
 <?php include __DIR__ . '/../partials/footer.php'; ?>
+
+<!-- ESTILOS LOCAIS (Você pode mover para o seu style.css se preferir) -->
+<style>
+.list-group { list-style: none; padding: 0; }
+.list-group-item { 
+    background-color: var(--surface-color); 
+    border-bottom: 1px solid var(--border-color); 
+    padding: 1rem 1.5rem;
+}
+.list-group-item:last-child { border-bottom: none; }
+.mr-2 { margin-right: 0.5rem; }
+.mt-5 { margin-top: 3rem !important; }
+.badge { display: inline-block; padding: .35em .65em; font-size: .75em; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: .25rem; }
+.badge-individual { color: #fff; background-color: var(--primary-accent); }
+</style>
