@@ -74,6 +74,8 @@ class MaterialController extends BaseController {
         $materialToUpdate->titulo = $_POST['titulo'];
         $materialToUpdate->conteudo = $_POST['conteudo'];
         $materialToUpdate->tipo = $_POST['tipo'];
+        // O curso_id não deve ser alterado na edição do material
+        $materialToUpdate->curso_id = $material['curso_id'];
         
         if ($materialToUpdate->update($this->pdo)) {
             $_SESSION['success_message'] = 'Material atualizado com sucesso!';

@@ -58,9 +58,8 @@ $routes = [
         '/cursos/create' => ['CursoController', 'create'],
         '/cursos/show/{id:[0-9]+}' => ['CursoController', 'show'],
         '/cursos/edit/{id:[0-9]+}' => ['CursoController', 'edit'],
-        '/cursos/enroll/{curso_id:[0-9]+}' => ['CursoController', 'enroll'],
         '/materiais/create/{curso_id:[0-9]+}' => ['MaterialController', 'create'],
-        '/materiais/edit/{id:[0-9]+}' => ['MaterialController', 'edit'],
+        '/materiais/edit/{id:[0-9]+}' => ['MaterialController', 'edit'], // ROTA ADICIONADA
     ],
     // Rotas POST (submissão de formulários)
     'POST' => [
@@ -72,8 +71,8 @@ $routes = [
         '/cursos/update/{id:[0-9]+}' => ['CursoController', 'update'],
         '/cursos/delete/{id:[0-9]+}' => ['CursoController', 'delete'],
         '/materiais/store' => ['MaterialController', 'store'],
-        '/materiais/update/{id:[0-9]+}' => ['MaterialController', 'update'],
-        '/materiais/delete/{id:[0-9]+}' => ['MaterialController', 'delete'],
+        '/materiais/update/{id:[0-9]+}' => ['MaterialController', 'update'], // ROTA ADICIONADA
+        '/materiais/delete/{id:[0-9]+}' => ['MaterialController', 'delete'], // ROTA ADICIONADA
     ]
 ];
 
@@ -107,14 +106,12 @@ if ($controllerName && $actionName) {
     // Validação CSRF para todas as requisições POST
     if ($method === 'POST' && !verifyCsrfToken()) {
         $_SESSION['error_message'] = 'Falha de segurança (CSRF). Por favor, tente novamente.';
-        // Redireciona para a página anterior ou para a home
         header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? BASE_URL . '/'));
         exit;
     }
 
     if (class_exists($controllerName)) {
         // REFActoring: Injeta a conexão PDO no construtor do controller.
-        // Isso elimina a necessidade de 'global $pdo' e melhora a qualidade do código.
         $controllerInstance = new $controllerName($pdo);
         
         if (method_exists($controllerInstance, $actionName)) {

@@ -4,7 +4,7 @@
     <div>
         <h1><?= htmlspecialchars($curso['titulo']) ?></h1>
         <p class="lead"><?= htmlspecialchars($curso['descricao']) ?></p>
-        <small>Professor: <?= htmlspecialchars($curso['professor_nome']) ?></small>
+        <small class="text-muted">Professor: <?= htmlspecialchars($curso['professor_nome']) ?></small>
     </div>
     <div>
         <a href="<?= BASE_URL ?>/dashboard" class="btn btn-secondary">Voltar ao Dashboard</a>
@@ -23,7 +23,7 @@ if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor' && $curso[
 </div>
 <?php endif; ?>
 
-<hr style="border-color: var(--border-color); margin: 2rem 0;">
+<hr>
 
 <?php
 // Variável para simplificar a lógica de permissão de visualização do conteúdo
@@ -40,17 +40,24 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
     </div>
 
     <?php if (empty($materiais)): ?>
-        <div class="card">
-            <div class="card-body text-center">
-                <p>Nenhum material postado neste curso ainda.</p>
-            </div>
-        </div>
+        <div class="card"><div class="card-body text-center"><p>Nenhum material postado neste curso ainda.</p></div></div>
     <?php else: ?>
         <?php foreach ($materiais as $material): ?>
             <div class="card mb-3">
                 <div class="card-body">
-                    <h5 class="card-title"><?= htmlspecialchars($material['titulo']) ?> (<?= ucfirst(htmlspecialchars($material['tipo'])) ?>)</h5>
-                    <p class="card-text" style="color: var(--text-primary);"><?= nl2br(htmlspecialchars($material['conteudo'])) ?></p>
+                    <div class="d-flex justify-content-between">
+                        <h5 class="card-title"><?= htmlspecialchars($material['titulo']) ?> (<?= ucfirst(htmlspecialchars($material['tipo'])) ?>)</h5>
+                        <?php if ($_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']): ?>
+                            <div class="material-actions">
+                                <a href="<?= BASE_URL ?>/materiais/edit/<?= $material['id'] ?>" class="btn btn-sm btn-secondary" title="Editar"><i class="fas fa-pen"></i></a>
+                                <form action="<?= BASE_URL ?>/materiais/delete/<?= $material['id'] ?>" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este material? Esta ação não pode ser desfeita.')">
+                                    <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Excluir"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <p class="card-text" style="color: var(--text-primary); margin-top: 1rem;"><?= nl2br(htmlspecialchars($material['conteudo'])) ?></p>
                     <small class="text-muted">Postado em: <?= date('d/m/Y H:i', strtotime($material['data_postagem'])) ?></small>
                 </div>
             </div>
@@ -63,7 +70,7 @@ $podeVerConteudo = (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'profe
         <p>Use o código da turma fornecido pelo seu professor na sua Dashboard para entrar.</p>
     </div>
 <?php else: ?>
-    <div class="alert alert-error text-center">
+     <div class="alert alert-error text-center">
         <h4>Acesso Negado</h4>
         <p>Você não tem permissão para ver o conteúdo deste curso.</p>
     </div>
