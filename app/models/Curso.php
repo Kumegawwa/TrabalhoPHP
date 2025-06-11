@@ -130,12 +130,15 @@ class Curso
      * Busca todos os materiais associados a um curso.
      * @param PDO $pdo Conexão com o banco de dados.
      * @param int $curso_id ID do curso.
-     * @return array
+     * @param int $user_id ID do usuário logado (para filtro de aluno).
+     * @param string $user_profile Perfil do usuário logado (para filtro).
+     * @return array Lista de materiais.
      */
-    public function getMateriais(PDO $pdo, int $curso_id): array
+    public function getMateriais(PDO $pdo, int $curso_id, int $user_id, string $user_profile): array
     {
         $materialModel = new Material();
-        return $materialModel->getByCursoId($pdo, $curso_id);
+        // CORREÇÃO APLICADA: Repassa todos os 4 argumentos para o método correto.
+        return $materialModel->getByCursoId($pdo, $curso_id, $user_id, $user_profile);
     }
 
     /**
