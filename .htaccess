@@ -2,7 +2,6 @@
     RewriteEngine On
     RewriteBase /TrabalhoPHP/
 
-    # Redireciona todas as requisições para a pasta public/
     RewriteRule ^$ public/ [L]
     RewriteRule (.*) public/$1 [L]
 </IfModule>
