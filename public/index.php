@@ -21,7 +21,7 @@ spl_autoload_register(function ($class_name) {
 });
 
 // Constante para a URL base
-define('BASE_URL', '/TrabalhoPHP'); // Ajuste se necessário
+define('BASE_URL', '/TrabalhoPHP');
 
 // Análise da Rota
 $request_uri = $_SERVER['REQUEST_URI'];
@@ -37,10 +37,10 @@ $routes = [
         '/sobre' => ['SiteController', 'sobre'],
         '/lista-cursos' => ['SiteController', 'listaCursosPublicos'],
         '/login' => ['AuthController', 'login'],
-        '/dashboard' => ['DashboardController', 'index'],
         '/logout' => ['AuthController', 'logout'],
         '/register' => ['UsuarioController', 'create'],
         '/recuperar-senha' => ['AuthController', 'showRecoverForm'],
+        '/dashboard' => ['DashboardController', 'index'],
         '/cursos' => ['CursoController', 'index'],
         '/cursos/create' => ['CursoController', 'create'],
         '/cursos/show/{id:[0-9]+}' => ['CursoController', 'show'],
@@ -54,16 +54,20 @@ $routes = [
         '/register' => ['UsuarioController', 'store'],
         '/recuperar-senha' => ['AuthController', 'processRecovery'],
         '/cursos/store' => ['CursoController', 'store'],
+        '/cursos/join' => ['CursoController', 'joinByCode'],
         '/cursos/update/{id:[0-9]+}' => ['CursoController', 'update'],
         '/cursos/delete/{id:[0-9]+}' => ['CursoController', 'delete'],
         '/materiais/store' => ['MaterialController', 'store'],
     ]
 ];
 
-// Funções de Proteção
+// Funções de Proteção de Rota
 function isProtectedRoute($controller, $action) {
     $protected = [
-        'CursoController@index', 'CursoController@create', 'CursoController@store', 'CursoController@show', 'CursoController@edit', 'CursoController@update', 'CursoController@delete', 'CursoController@enroll',
+        'DashboardController@index',
+        'CursoController@create', 'CursoController@store', 'CursoController@show', 
+        'CursoController@edit', 'CursoController@update', 'CursoController@delete', 
+        'CursoController@enroll', 'CursoController@joinByCode',
         'MaterialController@create', 'MaterialController@store',
         'AuthController@logout'
     ];
@@ -72,7 +76,8 @@ function isProtectedRoute($controller, $action) {
 
 function isProfessorRoute($controller, $action) {
     $profRoutes = [
-        'CursoController@create', 'CursoController@store', 'CursoController@edit', 'CursoController@update', 'CursoController@delete',
+        'CursoController@create', 'CursoController@store', 'CursoController@edit', 
+        'CursoController@update', 'CursoController@delete',
         'MaterialController@create', 'MaterialController@store'
     ];
     return in_array($controller . '@' . $action, $profRoutes);
@@ -80,7 +85,6 @@ function isProfessorRoute($controller, $action) {
 
 // Lógica de Roteamento
 $method = $_SERVER['REQUEST_METHOD'];
-// Tratamento especial para formulários que simulam PUT/DELETE
 if ($method === 'POST' && isset($_POST['_method']) && in_array(strtoupper($_POST['_method']), ['PUT', 'DELETE'])) {
     $method = strtoupper($_POST['_method']);
 }
@@ -109,24 +113,21 @@ if (isset($routes[$method])) {
 
 // Despacho da Rota
 if ($controllerName && $actionName) {
-    // 1. Proteção CSRF para todas as requisições POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
         $_SESSION['error_message'] = 'Falha de segurança (CSRF). Tente novamente.';
         header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? BASE_URL . '/'));
         exit;
     }
 
-    // 2. Proteção de Rota (Login Obrigatório)
     if (isProtectedRoute($controllerName, $actionName) && !isset($_SESSION['usuario_id'])) {
         $_SESSION['error_message'] = 'Você precisa estar logado para acessar esta página.';
         header('Location: ' . BASE_URL . '/login');
         exit;
     }
 
-    // 3. Proteção de Perfil (Apenas Professor)
-    if (isProfessorRoute($controllerName, $actionName) && $_SESSION['perfil'] !== 'professor') {
+    if (isProfessorRoute($controllerName, $actionName) && (!isset($_SESSION['perfil']) || $_SESSION['perfil'] !== 'professor')) {
         $_SESSION['error_message'] = 'Acesso negado. Apenas professores podem realizar esta ação.';
-        header('Location: ' . BASE_URL . '/cursos');
+        header('Location: ' . BASE_URL . '/dashboard');
         exit;
     }
 
