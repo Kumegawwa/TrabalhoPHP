@@ -2,18 +2,27 @@
 
 class CursoController extends BaseController {
 
+    /**
+     * Exibe a lista pública de todos os cursos.
+     */
     public function index() {
         $cursoModel = new Curso();
         $cursos = $cursoModel->getAll($this->pdo);
         require __DIR__ . '/../views/site/lista_cursos.php';
     }
 
+    /**
+     * Exibe o formulário para criar um novo curso.
+     */
     public function create() {
         $this->checkProfessor();
         $viewData = ['titulo_pagina' => 'Criar Novo Curso', 'action' => BASE_URL . '/cursos/store', 'curso' => null, 'is_edit' => false];
         require __DIR__ . '/../views/cursos/form.php';
     }
 
+    /**
+     * Salva um novo curso no banco de dados.
+     */
     public function store() {
         $this->checkProfessor();
         $curso = new Curso();
@@ -30,6 +39,9 @@ class CursoController extends BaseController {
         exit;
     }
 
+    /**
+     * Mostra detalhes de um curso específico e seus materiais.
+     */
     public function show(int $id) {
         $this->checkAuth();
         $cursoModel = new Curso();
@@ -50,6 +62,9 @@ class CursoController extends BaseController {
         require __DIR__ . '/../views/cursos/show.php';
     }
 
+    /**
+     * Exibe o formulário para editar um curso existente.
+     */
     public function edit(int $id) {
         $this->checkProfessor();
         $cursoModel = new Curso();
@@ -65,6 +80,9 @@ class CursoController extends BaseController {
         require __DIR__ . '/../views/cursos/form.php';
     }
 
+    /**
+     * Atualiza um curso no banco de dados.
+     */
     public function update(int $id) {
         $this->checkProfessor();
         $curso = new Curso();
@@ -82,19 +100,33 @@ class CursoController extends BaseController {
         exit;
     }
     
+    /**
+     * Permite que um PROFESSOR delete uma turma.
+     */
     public function delete(int $id) {
         $this->checkProfessor();
         $cursoModel = new Curso();
         
+        // Validação extra para garantir que o professor logado é o dono do curso
+        $curso = $cursoModel->findById($this->pdo, $id);
+        if (!$curso || $curso['professor_id'] != $_SESSION['usuario_id']) {
+            $_SESSION['error_message'] = "Você não tem permissão para excluir este curso.";
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit;
+        }
+
         if ($cursoModel->delete($this->pdo, $id, $_SESSION['usuario_id'])) {
-             $_SESSION['success_message'] = "Curso deletado com sucesso!";
+             $_SESSION['success_message'] = "Turma deletada com sucesso!";
         } else {
-             $_SESSION['error_message'] = "Erro ao deletar o curso ou permissão negada.";
+             $_SESSION['error_message'] = "Erro ao deletar a turma.";
         }
         header('Location: ' . BASE_URL . '/dashboard');
         exit;
     }
     
+    /**
+     * Permite que um ALUNO se inscreva em uma turma usando um código.
+     */
     public function joinByCode() {
         $this->checkAuth();
         if ($_SESSION['perfil'] !== 'aluno') {
@@ -129,6 +161,29 @@ class CursoController extends BaseController {
             $_SESSION['error_message'] = "Você já está inscrito neste curso.";
         }
         
+        header('Location: ' . BASE_URL . '/dashboard');
+        exit;
+    }
+
+    /**
+     * Permite que um ALUNO saia de uma turma (se desinscreva).
+     */
+    public function leave(int $curso_id) {
+        $this->checkAuth(); // Garante que o usuário está logado
+        if ($_SESSION['perfil'] !== 'aluno') {
+            $_SESSION['error_message'] = "Apenas alunos podem sair de turmas.";
+            header('Location: ' . BASE_URL . '/dashboard');
+            exit;
+        }
+
+        $inscricaoModel = new Inscricao();
+        
+        if ($inscricaoModel->deleteByAlunoAndCurso($this->pdo, $_SESSION['usuario_id'], $curso_id)) {
+            $_SESSION['success_message'] = "Você saiu da turma com sucesso.";
+        } else {
+            $_SESSION['error_message'] = "Ocorreu um erro ao tentar sair da turma.";
+        }
+
         header('Location: ' . BASE_URL . '/dashboard');
         exit;
     }

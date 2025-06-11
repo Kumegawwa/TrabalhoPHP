@@ -59,7 +59,7 @@ $routes = [
         '/cursos/show/{id:[0-9]+}' => ['CursoController', 'show'],
         '/cursos/edit/{id:[0-9]+}' => ['CursoController', 'edit'],
         '/materiais/create/{curso_id:[0-9]+}' => ['MaterialController', 'create'],
-        '/materiais/edit/{id:[0-9]+}' => ['MaterialController', 'edit'], // ROTA ADICIONADA
+        '/materiais/edit/{id:[0-9]+}' => ['MaterialController', 'edit'],
     ],
     // Rotas POST (submissão de formulários)
     'POST' => [
@@ -70,9 +70,10 @@ $routes = [
         '/cursos/join' => ['CursoController', 'joinByCode'],
         '/cursos/update/{id:[0-9]+}' => ['CursoController', 'update'],
         '/cursos/delete/{id:[0-9]+}' => ['CursoController', 'delete'],
+        '/cursos/leave/{id:[0-9]+}' => ['CursoController', 'leave'], // <-- ROTA ADICIONADA
         '/materiais/store' => ['MaterialController', 'store'],
-        '/materiais/update/{id:[0-9]+}' => ['MaterialController', 'update'], // ROTA ADICIONADA
-        '/materiais/delete/{id:[0-9]+}' => ['MaterialController', 'delete'], // ROTA ADICIONADA
+        '/materiais/update/{id:[0-9]+}' => ['MaterialController', 'update'],
+        '/materiais/delete/{id:[0-9]+}' => ['MaterialController', 'delete'],
     ]
 ];
 
@@ -103,7 +104,6 @@ if (isset($routes[$method])) {
 
 // Executa o controller e o método correspondente
 if ($controllerName && $actionName) {
-    // Validação CSRF para todas as requisições POST
     if ($method === 'POST' && !verifyCsrfToken()) {
         $_SESSION['error_message'] = 'Falha de segurança (CSRF). Por favor, tente novamente.';
         header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? BASE_URL . '/'));
@@ -111,11 +111,8 @@ if ($controllerName && $actionName) {
     }
 
     if (class_exists($controllerName)) {
-        // REFActoring: Injeta a conexão PDO no construtor do controller.
         $controllerInstance = new $controllerName($pdo);
-        
         if (method_exists($controllerInstance, $actionName)) {
-            // A lógica de segurança (checkAuth, checkProfessor) agora está DENTRO dos próprios controllers.
             call_user_func_array([$controllerInstance, $actionName], $params);
         } else {
             http_response_code(404);
@@ -126,7 +123,6 @@ if ($controllerName && $actionName) {
         echo "Erro 404: O controller '{$controllerName}' não foi encontrado.";
     }
 } else {
-    // Se nenhuma rota foi encontrada, exibe erro 404.
     http_response_code(404);
     echo "Erro 404: Página não encontrada.";
 }

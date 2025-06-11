@@ -7,7 +7,6 @@
     <?php endif; ?>
 </div>
 
-<!-- Seção para Aluno entrar em turma por código -->
 <?php if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'aluno'): ?>
 <div class="card mb-4">
     <div class="card-header">
@@ -24,17 +23,24 @@
 <?php endif; ?>
 
 
-<!-- Grade de Cursos -->
 <div class="row">
     <?php if (empty($viewData['cursos'])): ?>
-        <!-- Card de "Estado Vazio" -->
         <div class="col-12">
             <div class="card text-center" style="padding: 3rem; border-style: dashed;">
-                <!-- ... (código do estado vazio) ... -->
+                <div class="card-body">
+                    <i class="fas fa-ghost fa-3x" style="color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                    <h3 style="color: var(--text-primary);">Tudo quieto por aqui...</h3>
+                    <p>
+                        <?php if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor'): ?>
+                            Parece que você ainda não criou nenhum curso. Que tal começar agora clicando no botão "Criar Novo Curso"?
+                        <?php else: ?>
+                            Você ainda não está inscrito em nenhum curso. Utilize o código da turma fornecido pelo seu professor para começar.
+                        <?php endif; ?>
+                    </p>
+                </div>
             </div>
         </div>
     <?php else: ?>
-        <!-- Loop para exibir os cards dos cursos -->
         <?php foreach ($viewData['cursos'] as $curso): ?>
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
@@ -48,13 +54,16 @@
                     <div class="card-footer">
                         <a href="<?= BASE_URL ?>/cursos/show/<?= $curso['id'] ?>" class="btn btn-primary" style="flex-grow: 1;">Acessar</a>
                         
-                        <!-- LÓGICA DE AÇÕES ESPECÍFICAS POR PERFIL -->
                         <?php if (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'professor'): ?>
-                            <a href="<?= BASE_URL ?>/cursos/edit/<?= $curso['id'] ?>" class="btn btn-secondary" title="Editar"><i class="fas fa-pen"></i></a>
-                            <!-- Formulário para Excluir Turma -->
+                            <a href="<?= BASE_URL ?>/cursos/edit/<?= $curso['id'] ?>" class="btn btn-secondary" title="Editar Turma"><i class="fas fa-pen"></i></a>
                             <form action="<?= BASE_URL ?>/cursos/delete/<?= $curso['id'] ?>" method="POST" onsubmit="return confirm('ATENÇÃO: Excluir uma turma é uma ação permanente e removerá todos os seus materiais e inscrições de alunos. Deseja continuar?');">
                                 <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
                                 <button type="submit" class="btn btn-danger" title="Excluir Turma"><i class="fas fa-trash"></i></button>
+                            </form>
+                        <?php elseif (isset($_SESSION['perfil']) && $_SESSION['perfil'] === 'aluno'): ?>
+                            <form action="<?= BASE_URL ?>/cursos/leave/<?= $curso['id'] ?>" method="POST" onsubmit="return confirm('Tem certeza que deseja sair desta turma?');">
+                                <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+                                <button type="submit" class="btn btn-danger" title="Sair da Turma"><i class="fas fa-sign-out-alt"></i></button>
                             </form>
                         <?php endif; ?>
 
