@@ -1,23 +1,16 @@
 <?php
 class AuthController {
     public function login() {
-        // O roteador agora cuida de chamar as views
         require __DIR__ . '/../views/auth/login.php';
     }
 
     public function processLogin() {
-        global $pdo; // Certifique-se que $pdo está disponível globalmente ou passe como parâmetro
-
-        // Validação CSRF (se você implementou no seu helper/index)
-        // if (!verifyCsrfToken()) { die('CSRF token inválido.'); }
-
-
+        global $pdo;
         $email = $_POST['email'] ?? '';
         $senha = $_POST['senha'] ?? '';
 
         if (empty($email) || empty($senha)) {
-            // Redirecionar de volta com erro
-            $_SESSION['login_error'] = "Email e senha são obrigatórios.";
+            $_SESSION['error_message'] = "Email e senha são obrigatórios.";
             header('Location: ' . BASE_URL . '/login');
             exit;
         }
@@ -28,13 +21,13 @@ class AuthController {
         if ($user && password_verify($senha, $user['senha_hash'])) {
             $_SESSION['usuario_id'] = $user['id'];
             $_SESSION['perfil'] = $user['perfil'];
-            $_SESSION['usuario_nome'] = $user['nome']; // Útil para o header
+            $_SESSION['usuario_nome'] = $user['nome'];
             
-            unset($_SESSION['login_error']); // Limpa erro de login
-            header('Location: ' . BASE_URL . '/home'); // Use a constante BASE_URL
+            unset($_SESSION['error_message']);
+            header('Location: ' . BASE_URL . '/cursos');
             exit;
         } else {
-            $_SESSION['login_error'] = "Login inválido. Verifique seu email e senha.";
+            $_SESSION['error_message'] = "Login inválido. Verifique seu email e senha.";
             header('Location: ' . BASE_URL . '/login');
             exit;
         }
@@ -44,6 +37,33 @@ class AuthController {
         session_unset();
         session_destroy();
         header('Location: ' . BASE_URL . '/login');
+        exit;
+    }
+
+    public function showRecoverForm() {
+        require __DIR__ . '/../views/auth/recover.php';
+    }
+
+    public function processRecovery() {
+        global $pdo;
+        $cpf = $_POST['cpf'] ?? '';
+        $data_nascimento = $_POST['data_nascimento'] ?? '';
+        $nova_senha = $_POST['nova_senha'] ?? '';
+
+        $usuarioModel = new Usuario();
+        $user = $usuarioModel->validatePasswordReset($pdo, $cpf, $data_nascimento);
+
+        if ($user && !empty($nova_senha)) {
+            $usuarioModel->id = $user['id'];
+            $usuarioModel->senha_hash = $nova_senha;
+            $usuarioModel->updatePassword($pdo);
+            
+            $_SESSION['success_message'] = "Senha redefinida com sucesso! Você já pode fazer login.";
+            header('Location: ' . BASE_URL . '/login');
+        } else {
+            $_SESSION['error_message'] = "CPF ou data de nascimento inválidos.";
+            header('Location: ' . BASE_URL . '/recuperar-senha');
+        }
         exit;
     }
 }
