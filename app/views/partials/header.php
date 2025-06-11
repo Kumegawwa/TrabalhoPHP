@@ -2,7 +2,6 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-// Certifique-se que BASE_URL está definida (geralmente em public/index.php)
 if (!defined('BASE_URL')) {
     define('BASE_URL', '/TrabalhoPHP');
 }
@@ -13,13 +12,15 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestão de Aprendizagem</title>
-    
-    <link rel="stylesheet" href="<?= BASE_URL ?>/css/style.css">
+    <title>SGA | Sistema de Gestão de Aprendizagem</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     
+    <link rel="stylesheet" href="<?= BASE_URL ?>/css/style.css">
     <script defer src="<?= BASE_URL ?>/js/main.js"></script>
 </head>
 <body>
@@ -38,7 +39,7 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
                     <li><a href="<?= BASE_URL ?>/lista-cursos" class="<?= ($current_path == BASE_URL.'/lista-cursos') ? 'active' : '' ?>"><i class="fas fa-list"></i> Lista Cursos</a></li>
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle"><i class="fas fa-user-circle"></i> <?= htmlspecialchars($_SESSION['usuario_nome'] ?? 'Minha Conta') ?> <i class="fas fa-chevron-down"></i></a>
+                            <a href="#" class="dropdown-toggle"><i class="fas fa-user-circle"></i> <?= htmlspecialchars($_SESSION['usuario_nome'] ?? 'Minha Conta') ?></a>
                             <ul class="dropdown-menu">
                                 <li><a href="<?= BASE_URL ?>/logout" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                             </ul>
