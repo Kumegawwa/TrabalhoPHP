@@ -37,6 +37,7 @@ $routes = [
         '/sobre' => ['SiteController', 'sobre'],
         '/lista-cursos' => ['SiteController', 'listaCursosPublicos'],
         '/login' => ['AuthController', 'login'],
+        '/dashboard' => ['DashboardController', 'index'],
         '/logout' => ['AuthController', 'logout'],
         '/register' => ['UsuarioController', 'create'],
         '/recuperar-senha' => ['AuthController', 'showRecoverForm'],

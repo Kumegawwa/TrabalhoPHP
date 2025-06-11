@@ -1,10 +1,15 @@
 <?php
+// Inicia a sessão se ainda não houver uma ativa
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Define a URL base do projeto como fallback, caso não tenha sido definida no roteador
 if (!defined('BASE_URL')) {
     define('BASE_URL', '/TrabalhoPHP');
 }
+
+// Pega o caminho da URL atual para marcar o link de navegação como "ativo"
 $current_path = strtok($_SERVER['REQUEST_URI'], '?');
 ?>
 <!DOCTYPE html>
@@ -33,10 +38,17 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
                 <input type="checkbox" id="menu-toggle">
                 <label for="menu-toggle" class="hamburger" aria-label="Menu"><i class="fas fa-bars"></i></label>
                 <ul class="nav-links">
-                    <li><a href="<?= BASE_URL ?>/home" class="<?= ($current_path == BASE_URL.'/home' || $current_path == BASE_URL.'/') ? 'active' : '' ?>"><i class="fas fa-home"></i> Home</a></li>
+                    
+                    <?php if (isset($_SESSION['usuario_id'])): ?>
+                        <li><a href="<?= BASE_URL ?>/dashboard" class="<?= (strpos($current_path, 'dashboard') !== false) ? 'active' : '' ?>"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <?php else: ?>
+                        <li><a href="<?= BASE_URL ?>/home" class="<?= ($current_path == BASE_URL.'/home' || $current_path == BASE_URL.'/') ? 'active' : '' ?>"><i class="fas fa-home"></i> Home</a></li>
+                    <?php endif; ?>
+
                     <li><a href="<?= BASE_URL ?>/cursos" class="<?= (strpos($current_path, BASE_URL.'/cursos') === 0) ? 'active' : '' ?>"><i class="fas fa-book"></i> Cursos</a></li>
                     <li><a href="<?= BASE_URL ?>/sobre" class="<?= ($current_path == BASE_URL.'/sobre') ? 'active' : '' ?>"><i class="fas fa-info-circle"></i> Sobre</a></li>
                     <li><a href="<?= BASE_URL ?>/lista-cursos" class="<?= ($current_path == BASE_URL.'/lista-cursos') ? 'active' : '' ?>"><i class="fas fa-list"></i> Lista Cursos</a></li>
+                    
                     <?php if (isset($_SESSION['usuario_id'])): ?>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle"><i class="fas fa-user-circle"></i> <?= htmlspecialchars($_SESSION['usuario_nome'] ?? 'Minha Conta') ?></a>
@@ -54,10 +66,10 @@ $current_path = strtok($_SERVER['REQUEST_URI'], '?');
     <main class="main-content">
         <div class="container page-container">
             <?php if (isset($_SESSION['error_message'])): ?>
-                <div class="alert alert-error"><?= $_SESSION['error_message'] ?></div>
+                <div class="alert alert-error" role="alert"><?= $_SESSION['error_message'] ?></div>
                 <?php unset($_SESSION['error_message']); ?>
             <?php endif; ?>
             <?php if (isset($_SESSION['success_message'])): ?>
-                <div class="alert alert-success"><?= $_SESSION['success_message'] ?></div>
+                <div class="alert alert-success" role="alert"><?= $_SESSION['success_message'] ?></div>
                 <?php unset($_SESSION['success_message']); ?>
             <?php endif; ?>
