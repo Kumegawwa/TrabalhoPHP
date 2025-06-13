@@ -1,11 +1,7 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Tempo de geração: 11/06/2025 às 09:01
--- Versão do servidor: 10.4.32-MariaDB
--- Versão do PHP: 8.2.12
+CREATE DATABASE IF NOT EXISTS sga DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Usa o banco criado
+USE sga;
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
