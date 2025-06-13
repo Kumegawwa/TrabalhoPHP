@@ -1,5 +1,3 @@
-Com certeza! Aqui está uma versão mais simples e direta do `README.md` para o seu projeto:
-
 ```markdown
 # Sistema de Gestão de Aprendizagem (SGA)
 
@@ -55,5 +53,4 @@ Você também pode registrar um novo aluno na tela de cadastro.
 
 ---
 
-Feito com ❤️ por [Seu Nome/Nome da Equipe]
 ```
