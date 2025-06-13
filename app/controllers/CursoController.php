@@ -47,7 +47,6 @@ class CursoController extends BaseController {
             }
         }
 
-        // Busca a lista de alunos se o usuário for o professor do curso
         $alunos_inscritos = [];
         if ($_SESSION['perfil'] === 'professor' && $curso['professor_id'] == $_SESSION['usuario_id']) {
             $inscricaoModel = new Inscricao();

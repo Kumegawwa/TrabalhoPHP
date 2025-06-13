@@ -4,7 +4,7 @@
     <form method="POST" action="<?= $viewData['action'] ?>">
         <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
         
-        <?php if (isset($viewData['curso'])): // Para o método POST de deleção ?>
+        <?php if (isset($viewData['curso'])): ?>
         <input type="hidden" name="_method" value="POST">
         <?php endif; ?>
 

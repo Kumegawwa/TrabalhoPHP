@@ -2,18 +2,15 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-// Inclua isso no topo se ainda não estiver lá ou no index.php
+
 if (!defined('BASE_URL')) {
-    define('BASE_URL', '/TrabalhoPHP'); // Ajuste se necessário
+    define('BASE_URL', '/TrabalhoPHP');
 }
 
-// Inclua seu helper CSRF se tiver um arquivo separado para ele
-// require_once __DIR__ . '/../../../helpers/csrf.php';
-// A função generateCsrfToken() deve estar disponível
 if (function_exists('generateCsrfToken')) {
     $token = generateCsrfToken();
 } else {
-    // Fallback simples se a função não existir
+
     $token = bin2hex(random_bytes(32));
     $_SESSION['csrf_token'] = $token;
 }
@@ -23,7 +20,6 @@ if (function_exists('generateCsrfToken')) {
 <head>
     <meta charset="UTF-8">
     <title>Login - SGA</title>
-    <!-- Ajuste o caminho do CSS para usar BASE_URL ou caminho relativo correto -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">

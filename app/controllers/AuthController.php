@@ -35,7 +35,7 @@ class AuthController extends BaseController {
     }
 
     public function logout() {
-        $this->checkAuth(); // Apenas usuários logados podem fazer logout.
+        $this->checkAuth();
         session_unset();
         session_destroy();
         header('Location: ' . BASE_URL . '/login');

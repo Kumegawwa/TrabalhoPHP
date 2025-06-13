@@ -126,37 +126,17 @@ class Curso
         return $stmt->execute([$id, $professor_id]);
     }
 
-    /**
-     * Busca todos os materiais associados a um curso.
-     * @param PDO $pdo Conexão com o banco de dados.
-     * @param int $curso_id ID do curso.
-     * @param int $user_id ID do usuário logado (para filtro de aluno).
-     * @param string $user_profile Perfil do usuário logado (para filtro).
-     * @return array Lista de materiais.
-     */
     public function getMateriais(PDO $pdo, int $curso_id, int $user_id, string $user_profile): array
     {
         $materialModel = new Material();
-        // CORREÇÃO APLICADA: Repassa todos os 4 argumentos para o método correto.
         return $materialModel->getByCursoId($pdo, $curso_id, $user_id, $user_profile);
     }
 
-    /**
-     * Conta o total de cursos na plataforma.
-     * @param PDO $pdo Conexão com o banco de dados.
-     * @return int O número total de cursos.
-     */
     public function countAll(PDO $pdo): int {
         $stmt = $pdo->query("SELECT COUNT(id) FROM cursos");
         return (int) $stmt->fetchColumn();
     }
 
-    /**
-     * Busca os cursos mais recentes para exibir na home.
-     * @param PDO $pdo Conexão com o banco de dados.
-     * @param int $limit O número de cursos a serem retornados.
-     * @return array Uma lista dos cursos mais recentes.
-     */
     public function getLatest(PDO $pdo, int $limit = 3): array {
         $stmt = $pdo->query("
             SELECT c.*, u.nome as professor_nome 

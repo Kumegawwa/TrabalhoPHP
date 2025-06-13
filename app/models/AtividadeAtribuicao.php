@@ -28,17 +28,10 @@ class AtividadeAtribuicao {
         return $stmt->execute([$material_id]);
     }
 
-    /**
-     * Busca os IDs dos alunos para quem uma atividade foi atribuída.
-     * @param PDO $pdo
-     * @param int $material_id
-     * @return array
-     */
     public function findAlunosByMaterial(PDO $pdo, int $material_id): array {
         $sql = "SELECT aluno_id FROM atividade_atribuicoes WHERE material_id = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$material_id]);
-        // Retorna um array simples de IDs [1, 5, 12]
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 }

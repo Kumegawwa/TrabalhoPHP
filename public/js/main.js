@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Toggle do menu mobile
     const menuToggle = document.getElementById('menu-toggle');
     const hamburger = document.querySelector('.hamburger');
     
@@ -9,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Toggle de dropdown no mobile
     const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
     
     dropdownToggles.forEach(toggle => {
@@ -22,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Confirmação para exclusão
     const deleteBtns = document.querySelectorAll('.btn-danger[data-confirm]');
     
     deleteBtns.forEach(btn => {
@@ -33,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Validação de formulários
     const forms = document.querySelectorAll('form[data-validate]');
     
     forms.forEach(form => {
@@ -46,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     isValid = false;
                     input.classList.add('is-invalid');
                     
-                    // Criar mensagem de erro se não existir
                     let errorMessage = input.nextElementSibling;
                     if (!errorMessage || !errorMessage.classList.contains('error-message')) {
                         errorMessage = document.createElement('div');
@@ -57,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     input.classList.remove('is-invalid');
                     
-                    // Remover mensagem de erro se existir
                     const errorMessage = input.nextElementSibling;
                     if (errorMessage && errorMessage.classList.contains('error-message')) {
                         errorMessage.remove();
@@ -67,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!isValid) {
                 e.preventDefault();
-                // Scroll para o primeiro campo com erro
                 const firstInvalid = form.querySelector('.is-invalid');
                 if (firstInvalid) {
                     firstInvalid.focus();
@@ -76,14 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Validação em tempo real
         const inputs = form.querySelectorAll('[required]');
         inputs.forEach(input => {
             input.addEventListener('blur', () => {
                 if (!input.value.trim()) {
                     input.classList.add('is-invalid');
                     
-                    // Criar mensagem de erro se não existir
                     let errorMessage = input.nextElementSibling;
                     if (!errorMessage || !errorMessage.classList.contains('error-message')) {
                         errorMessage = document.createElement('div');
@@ -94,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     input.classList.remove('is-invalid');
                     
-                    // Remover mensagem de erro se existir
                     const errorMessage = input.nextElementSibling;
                     if (errorMessage && errorMessage.classList.contains('error-message')) {
                         errorMessage.remove();
@@ -106,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (input.value.trim()) {
                     input.classList.remove('is-invalid');
                     
-                    // Remover mensagem de erro se existir
                     const errorMessage = input.nextElementSibling;
                     if (errorMessage && errorMessage.classList.contains('error-message')) {
                         errorMessage.remove();
@@ -116,23 +105,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Efeito de loading em botões
     const loadingBtns = document.querySelectorAll('.btn[data-loading]');
     
     loadingBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Armazenar o texto original do botão
             const originalText = btn.innerHTML;
             
-            // Adicionar classe de loading e substituir texto
             btn.classList.add('btn-loading');
             btn.innerHTML = '<span>' + originalText + '</span>';
             
-            // Desabilitar o botão durante o carregamento
             btn.disabled = true;
             
-            // Simular o fim do carregamento após um tempo (apenas para demonstração)
-            // Em produção, isso seria controlado pelo retorno da requisição
+
             setTimeout(() => {
                 btn.classList.remove('btn-loading');
                 btn.innerHTML = originalText;
@@ -141,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Feedback visual em botões
     const buttons = document.querySelectorAll('.btn');
     
     buttons.forEach(btn => {
@@ -158,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Animação de fade-in para elementos
     const fadeElements = document.querySelectorAll('.fade-in');
     
     fadeElements.forEach(element => {

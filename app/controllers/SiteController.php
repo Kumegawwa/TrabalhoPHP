@@ -2,11 +2,6 @@
 
 class SiteController extends BaseController {
 
-    /**
-     * Carrega a página inicial (landing page).
-     * Se o usuário estiver logado, redireciona para a dashboard.
-     * Caso contrário, busca dados para exibir na página.
-     */
     public function home() {
         if (isset($_SESSION['usuario_id'])) {
             header('Location: ' . BASE_URL . '/dashboard');
@@ -16,7 +11,7 @@ class SiteController extends BaseController {
         $cursoModel = new Curso();
         $usuarioModel = new Usuario();
 
-        // Coleta os dados para a view da landing page
+
         $viewData = [
             'total_cursos' => $cursoModel->countAll($this->pdo),
             'total_alunos' => $usuarioModel->countByProfile($this->pdo, 'aluno'),

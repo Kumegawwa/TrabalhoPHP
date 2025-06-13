@@ -1,5 +1,4 @@
 <?php
-// helpers/csrf.php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -15,7 +14,6 @@ function verifyCsrfToken($token_from_form = null) {
     if ($token_from_form === null && isset($_POST['csrf_token'])) {
         $token_from_form = $_POST['csrf_token'];
     } elseif ($token_from_form === null && isset($_GET['csrf_token'])) {
-        // Para GET, se realmente precisar, mas geralmente não é para CSRF
         $token_from_form = $_GET['csrf_token'];
     }
 
@@ -26,7 +24,6 @@ function verifyCsrfToken($token_from_form = null) {
     return hash_equals($_SESSION['csrf_token'], $token_from_form);
 }
 
-// Regenera o token após uso ou em intervalos para maior segurança (opcional avançado)
 function regenerateCsrfToken() {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }

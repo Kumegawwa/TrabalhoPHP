@@ -12,7 +12,6 @@ class MaterialController extends BaseController {
             exit;
         }
 
-        // Busca alunos para preencher os checkboxes
         $inscricaoModel = new Inscricao();
         $alunos_inscritos = $inscricaoModel->findUsersByCourse($this->pdo, $curso_id);
 
@@ -23,7 +22,7 @@ class MaterialController extends BaseController {
             'curso_id' => $curso_id, 
             'is_edit' => false,
             'alunos_inscritos' => $alunos_inscritos,
-            'alunos_atribuidos' => [] // Vazio na criação
+            'alunos_atribuidos' => []
         ];
         require __DIR__ . '/../views/materiais/form.php';
     }
@@ -39,7 +38,6 @@ class MaterialController extends BaseController {
         $novoMaterialId = $material->create($this->pdo);
 
         if ($novoMaterialId) {
-            // Se alunos foram selecionados no formulário, cria as atribuições
             if (isset($_POST['alunos_atribuidos']) && is_array($_POST['alunos_atribuidos'])) {
                 $atribuicaoModel = new AtividadeAtribuicao();
                 foreach ($_POST['alunos_atribuidos'] as $aluno_id) {
@@ -70,11 +68,9 @@ class MaterialController extends BaseController {
             exit;
         }
 
-        // Busca alunos para preencher os checkboxes
         $inscricaoModel = new Inscricao();
         $alunos_inscritos = $inscricaoModel->findUsersByCourse($this->pdo, $material['curso_id']);
         
-        // Busca os alunos que já estão com a atividade atribuída para pré-marcar os checkboxes
         $atribuicaoModel = new AtividadeAtribuicao();
         $alunos_atribuidos = $atribuicaoModel->findAlunosByMaterial($this->pdo, $id);
 
@@ -114,9 +110,7 @@ class MaterialController extends BaseController {
         
         if ($materialToUpdate->update($this->pdo)) {
             $atribuicaoModel = new AtividadeAtribuicao();
-            // 1. Limpa todas as atribuições antigas para este material
             $atribuicaoModel->deleteByMaterial($this->pdo, $id);
-            // 2. Adiciona as novas atribuições, se houver
             if (isset($_POST['alunos_atribuidos']) && is_array($_POST['alunos_atribuidos'])) {
                 foreach ($_POST['alunos_atribuidos'] as $aluno_id) {
                     $atribuicaoModel->create($this->pdo, $id, (int)$aluno_id);

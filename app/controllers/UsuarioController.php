@@ -26,7 +26,7 @@ class UsuarioController extends BaseController {
         $usuario->senha_hash = $_POST['senha'];
         $usuario->cpf = $_POST['cpf'];
         $usuario->data_nascimento = $_POST['data_nascimento'];
-        $usuario->perfil = 'aluno'; // Padrão é sempre aluno no auto-cadastro
+        $usuario->perfil = 'aluno';
 
         if ($usuario->create($this->pdo)) {
             $_SESSION['success_message'] = 'Cadastro realizado com sucesso! Faça o login.';

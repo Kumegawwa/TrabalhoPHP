@@ -298,7 +298,6 @@ hr {
 .table tbody tr:hover { background-color: var(--surface-color); }
 
 
-/* 8. RODAPÉ (FOOTER) */
 .footer {
     background-color: var(--bg-color);
     color: var(--text-secondary);
@@ -332,7 +331,6 @@ hr {
 }
 
 
-/* 9. SISTEMA DE GRID E CLASSES UTILITÁRIAS */
 .py-5 { padding-top: var(--spacing-xl); padding-bottom: var(--spacing-xl); }
 .mb-5 { margin-bottom: var(--spacing-xl) !important; }
 .row {
@@ -375,7 +373,6 @@ hr {
 .mt-3 { margin-top: var(--spacing-md) !important; }
 
 
-/* 10. ESTILOS DA NOVA HOME PAGE */
 .hero-section {
     padding: var(--spacing-xl) 0;
     text-align: center;
@@ -430,8 +427,6 @@ hr {
     padding: var(--spacing-xl) 0;
 }
 
-
-/* 11. RESPONSIVIDADE DO MENU */
 .hamburger { display: none; }
 #menu-toggle { display: none; }
 @media (max-width: 768px) {
@@ -453,7 +448,7 @@ hr {
     }
     #menu-toggle:checked ~ .nav-links { display: flex; }
     .dropdown {
-        padding-bottom: 0; /* Remove a "ponte" no mobile, onde o clique é usado */
+        padding-bottom: 0;
         margin-bottom: 0;
     }
     .dropdown-menu {

@@ -1,15 +1,12 @@
 <?php
-// Inicia a sessão se ainda não houver uma ativa
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Define a URL base do projeto como fallback, caso não tenha sido definida no roteador
 if (!defined('BASE_URL')) {
     define('BASE_URL', '/TrabalhoPHP');
 }
 
-// Pega o caminho da URL atual para marcar o link de navegação como "ativo"
 $current_path = strtok($_SERVER['REQUEST_URI'], '?');
 ?>
 <!DOCTYPE html>
