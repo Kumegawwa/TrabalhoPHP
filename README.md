@@ -1,122 +1,59 @@
-Para criar o **Schema do Banco de Dados** usando o **MySQL via XAMPP**, siga este passo a passo simples e direto:
+Com certeza! Aqui está uma versão mais simples e direta do `README.md` para o seu projeto:
+
+```markdown
+# Sistema de Gestão de Aprendizagem (SGA)
+
+Este é um Sistema de Gestão de Aprendizagem simples, desenvolvido em PHP com padrão MVC, que permite a criação e gestão de cursos, materiais e atividades.
 
 ---
 
-### ✅ **1. Iniciar o XAMPP e o MySQL**
+## 🚀 Como Começar
 
-1. **Abra o XAMPP Control Panel**.
-2. Clique em **"Start"** nos serviços:
+Siga os passos abaixo para configurar e rodar o projeto localmente.
 
-   * **Apache**
-   * **MySQL**
+### Pré-requisitos
 
-> ⚠️ Certifique-se que as portas (geralmente 80 e 3306) não estejam sendo usadas por outros programas (como Skype ou Docker).
+* **XAMPP** (ou Apache e MySQL independentes)
 
----
+### 1. Configuração do Banco de Dados (MySQL via phpMyAdmin)
 
-### ✅ **2. Acessar o phpMyAdmin**
+1.  **Inicie o Apache e o MySQL** no seu painel de controle XAMPP.
+2.  Acesse o **phpMyAdmin** no seu navegador: `http://localhost/phpmyadmin`.
+3.  **Crie um novo banco de dados** chamado `sga` com colação `utf8_general_ci`.
+4.  Com o banco `sga` selecionado, vá para a aba **"SQL"** e cole o conteúdo do arquivo `sga.sql`.
+5.  Clique em **"Executar"** para criar as tabelas e popular com dados de exemplo.
 
-1. Abra o navegador e vá para:
+### 2. Configuração do Projeto
 
-   ```
-   http://localhost/phpmyadmin
-   ```
+1.  **Clone este repositório** ou baixe os arquivos.
+2.  Mova a pasta do projeto (ex: `TrabalhoPHP`) para o diretório `htdocs` do seu XAMPP.
+3.  **Ajuste a URL Base:** No arquivo `public/index.php`, verifique se `define('BASE_URL', '/TrabalhoPHP');` corresponde ao nome da pasta do seu projeto em `htdocs`.
+4.  **Configuração do Banco de Dados:** O arquivo `config/database.php` já vem configurado para `root` sem senha. Se o seu MySQL tiver credenciais diferentes, ajuste-as aqui.
 
-2. Você verá o painel do **phpMyAdmin**, que permite gerenciar bancos de dados MySQL visualmente.
+### 3. Acesso à Aplicação
 
----
+Abra seu navegador e acesse:
 
-### ✅ **3. Criar o Banco de Dados**
-
-1. No menu lateral esquerdo, clique em **"Novo"**.
-2. No campo **"Nome do banco de dados"**, digite:
-
-   ```
-   sga
-   ```
-3. No tipo de colação, selecione:
-
-   ```
-   utf8_general_ci
-   ```
-4. Clique em **Criar**.
-
----
-
-### ✅ **4. Criar as Tabelas via SQL (CREATE TABLE)**
-
-1. Com o banco `sga` selecionado, clique na aba **"SQL"**.
-2. Cole o seguinte código SQL:
-
-```sql
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100),
-    email VARCHAR(100) UNIQUE,
-    senha_hash VARCHAR(255),
-    perfil ENUM('aluno', 'professor', 'admin'),
-    cpf VARCHAR(14),
-    data_nascimento DATE
-);
-
-CREATE TABLE cursos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    titulo VARCHAR(100),
-    descricao TEXT,
-    professor_id INT,
-    FOREIGN KEY (professor_id) REFERENCES usuarios(id)
-);
-
-CREATE TABLE materiais_atividades (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    curso_id INT,
-    titulo VARCHAR(100),
-    conteudo TEXT,
-    tipo ENUM('material', 'atividade'),
-    data_postagem DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (curso_id) REFERENCES cursos(id)
-);
-
-CREATE TABLE inscricoes_cursos (
-    aluno_id INT,
-    curso_id INT,
-    data_inscricao DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (aluno_id, curso_id),
-    FOREIGN KEY (aluno_id) REFERENCES usuarios(id),
-    FOREIGN KEY (curso_id) REFERENCES cursos(id)
-);
-
-CREATE TABLE entregas_atividades (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    atividade_id INT,
-    aluno_id INT,
-    arquivo_entrega VARCHAR(255),
-    data_entrega DATETIME,
-    nota DECIMAL(5,2),
-    FOREIGN KEY (atividade_id) REFERENCES materiais_atividades(id),
-    FOREIGN KEY (aluno_id) REFERENCES usuarios(id)
-);
+```
+http://localhost/NOME_DA_SUA_PASTA_DO_PROJETO/public/
 ```
 
-3. Clique em **Executar**.
+(Ex: `http://localhost/TrabalhoPHP/public/` se você usou `TrabalhoPHP` como nome da pasta).
 
 ---
 
-### ✅ **5. Verificar as Tabelas Criadas**
+## 🔑 Credenciais de Teste (após importar `sga.sql`)
 
-* No menu à esquerda, clique em `sga`.
-* Veja se as tabelas aparecem: `usuarios`, `cursos`, `materiais_atividades`, `inscricoes_cursos`, `entregas_atividades`.
+* **Professor:**
+    * **Email:** `prof@sga.com`
+    * **Senha:** `123456` (ou a senha que você configurou para 'Professor Admin' no SQL)
+* **Aluno:**
+    * **Email:** `aluno@sga.com`
+    * **Senha:** `123456` (ou a senha que você configurou para 'Aluno Teste' no SQL)
+
+Você também pode registrar um novo aluno na tela de cadastro.
 
 ---
 
-### ✅ **6. Pronto para usar!**
-
-Agora seu banco de dados está configurado e pode ser acessado no seu projeto PHP via PDO, como neste exemplo:
-
-```php
-$pdo = new PDO('mysql:host=localhost;dbname=sga', 'root', '');
+Feito com ❤️ por [Seu Nome/Nome da Equipe]
 ```
-
----
-
-Se quiser, posso gerar um arquivo `.sql` que você pode importar diretamente pelo phpMyAdmin. Deseja que eu faça isso?
