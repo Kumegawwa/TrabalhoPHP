@@ -15,7 +15,7 @@
                 </div>
                  <div class="form-group">
                     <label class="label" for="cpf">CPF</label>
-                    <input class="input" type="text" name="cpf" id="cpf" placeholder="123.456.789-00" required>
+                    <input class="input" type="text" name="cpf" id="cpf" pattern="\d{11}" maxlength="11" placeholder="123.456.789-00" required title="Digite exatamente 11 números, sem pontos ou traços.">
                 </div>
                  <div class="form-group">
                     <label class="label" for="data_nascimento">Data de Nascimento</label>
@@ -23,7 +23,8 @@
                 </div>
                 <div class="form-group">
                     <label class="label" for="senha">Senha</label>
-                    <input class="input" type="password" name="senha" id="senha" required>
+                    <input class="input" type="password" name="senha" id="senha" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" title="A senha deve ter pelo menos 8 caracteres, incluindo letras e números." required>
+                    
                 </div>
                 <div class="form-group">
                     <button class="btn btn-primary w-100" type="submit">Cadastrar</button>

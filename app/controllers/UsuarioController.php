@@ -23,8 +23,34 @@ class UsuarioController extends BaseController {
         $usuario = new Usuario();
         $usuario->nome = $_POST['nome'];
         $usuario->email = $_POST['email'];
-        $usuario->senha_hash = $_POST['senha'];
-        $usuario->cpf = $_POST['cpf'];
+
+        $senha = $_POST["senha"];
+
+        // Verifica se a senha tem pelo menos 8 caracteres, com letras e números
+        if (preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/', $senha)) {
+            $_SESSION['success_message'] =  "Senha válida.";
+            $usuario->senha_hash = $senha;
+        } else {
+            $_SESSION['error_message'] = "Senha inválida. Deve ter pelo menos 8 caracteres, incluindo letras e números.";
+            header('Location: ' . BASE_URL . '/register');
+            exit;
+        }
+        
+        $cpf = $_POST["cpf"];
+
+        // Remove qualquer caractere que não seja número
+        $cpf = preg_replace('/\D/', '', $cpf);
+
+        // Verifica se o CPF tem 11 dígitos
+        if (strlen($cpf) != 11) {
+            $_SESSION['error_message'] = "CPF inválido. Deve conter 11 dígitos.";
+            header('Location: ' . BASE_URL . '/register');
+            exit;
+        } else {
+            $_SESSION['success_message'] = "CPF válido: " . $cpf;
+            $usuario->cpf = $cpf;
+        }
+
         $usuario->data_nascimento = $_POST['data_nascimento'];
         $usuario->perfil = 'aluno'; // Padrão é sempre aluno no auto-cadastro
 
